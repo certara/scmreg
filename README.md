@@ -1,2 +1,2 @@
 # scmreg
-Functions to perform SCM in R
+Perform Stepwise Covariate Modeling (SCM) in R

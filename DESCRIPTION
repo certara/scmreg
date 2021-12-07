@@ -1,0 +1,34 @@
+Package: scmreg
+Title: Perform Stepwise Covariate Modeling (SCM) in R
+Version: 0.0.0.9000
+Authors@R: 
+    c(person(given = "Philippe",
+           family = "Pierrillas",
+           role = c("aut", "cre"),
+           email = "Philippe.Pierrillas@certara.com"),
+      person(given = "James",
+           family = "Craig",
+           role = c("ctb"),
+           email = "James.Craig@certara.com"))
+Description: What the package does (one paragraph).
+Depends: R (>= 4.0)
+License: LGPL-3
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.1.2
+Suggests:
+    knitr,
+    rmarkdown,
+    testthat
+Imports:
+    lasso2,
+    MASS,
+    dplyr,
+    glue,
+    tidyverse,
+    crayon,
+    flextable,
+    officer,
+    stringr,
+    rlang,
+    tidyr
