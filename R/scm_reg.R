@@ -33,8 +33,8 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
                     full_relation=NULL,
                     max_steps=Inf,
                     ...){
-  #### Function
-  ############################################################
+  sym <- rlang::sym
+  `%>%` <- magrittr::`%>%`
 
   if (search_direction=='forward'){
     FORW=TRUE
@@ -80,7 +80,7 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
   if (max_steps<1)  stop('max_steps should be at least equal to 1')
 
-  if (!is.null(base_relation) & any((str_trim(unlist(unique(stringr::str_split(gsub('\\*', "\\+",base_relation), "\\+"))))) %in% covariate.list)){
+  if (!is.null(base_relation) & any((stringr::str_trim(unlist(unique(stringr::str_split(gsub('\\*', "\\+",base_relation), "\\+"))))) %in% covariate.list)){
     stop("covariates in the base_relation are also included in the covariates list, please remove them from the covariates list")
 
   }
@@ -118,27 +118,27 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
     #cov_back_only <- NULL # to overcome possible missuse of the cov_back_only argument with FORW=TRUE argument
 
 
-    coco <- glue_collapse(covariate.list , sep = "+")
+    coco <- glue::glue_collapse(covariate.list , sep = "+")
 
     coco_select_forw <- NULL
 
     if (is.null(base_relation) & regression=='lm') {
 
-      mod0=lm(as.formula(glue('{variable} ~ 1')),data=dataset)
+      mod0=lm(as.formula(glue::glue('{variable} ~ 1')),data=dataset)
 
     }else if (!is.null(base_relation) & regression=='lm') {
       #base_relation <- 'lsoda*coca +orangina'
 
-      mod0=lm(as.formula(glue('{variable} ~ {base_relation}')),data=dataset)
+      mod0=lm(as.formula(glue::glue('{variable} ~ {base_relation}')),data=dataset)
 
       # in order to get all parameters that are ot allowed to be removed
       cov_base <- gsub('\\*', "\\+",base_relation)
-      cov_base <- str_trim(unlist(unique(stringr::str_split(cov_base, "\\+"))))
+      cov_base <- stringr::str_trim(unlist(unique(stringr::str_split(cov_base, "\\+"))))
 
       cov_base_tmp <- broom::tidy(mod0)%>%
-        filter(term!='(Intercept)')%>%
-        filter(str_detect(term,':')) %>%
-        pull(term) %>% unique()
+        dplyr::filter(term!='(Intercept)')%>%
+        dplyr::filter(str_detect(term,':')) %>%
+        dplyr::pull(term) %>% unique()
 
       # sometimes with correlation it is reported as A:B or B:A, so I take both cases in the list to be sure
       splits <- strsplit(cov_base_tmp, ":")
@@ -149,20 +149,20 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
     }else if (is.null(base_relation) & regression=='logistic') {
 
-      mod0=glm(as.formula(glue('{variable} ~ 1')),data=dataset,family='binomial')
+      mod0=glm(as.formula(glue::glue('{variable} ~ 1')),data=dataset,family='binomial')
 
     }else if (!is.null(base_relation) & regression=='logistic') {
       #
-      mod0=glm(as.formula(glue('{variable} ~ {base_relation}')),data=dataset,family='binomial')
+      mod0=glm(as.formula(glue::glue('{variable} ~ {base_relation}')),data=dataset,family='binomial')
 
       # in order to get all parameters that are ot allowed to be removed
       cov_base <- gsub('\\*', "\\+",base_relation)
       cov_base <- unlist(unique(stringr::str_split(cov_base, "\\+")))
 
       cov_base_tmp <- broom::tidy(mod0)%>%
-        filter(term!='(Intercept)')%>%
-        filter(str_detect(term,':')) %>%
-        pull(term) %>% unique()
+        dplyr::filter(term!='(Intercept)')%>%
+        dplyr::filter(str_detect(term,':')) %>%
+        dplyr::pull(term) %>% unique()
 
 
       # sometimes with correlation it is reported as A:B or B:A, so I take both cases in the list to be sure
@@ -174,21 +174,21 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
     }else if (is.null(base_relation) & regression=='coxph') {
 
-      mod0=survival::coxph(as.formula(glue(' survival::Surv({variable}, {variable_event})~1')),data=dataset)
+      mod0=survival::coxph(as.formula(glue::glue(' survival::Surv({variable}, {variable_event})~1')),data=dataset)
 
     }else if (!is.null(base_relation) & regression=='coxph') {
       #base_relation <- 'lsoda*coca +orangina'
 
-      mod0=survival::coxph(as.formula(glue(' survival::Surv({variable}, {variable_event})~{base_relation}')),data=dataset)
+      mod0=survival::coxph(as.formula(glue::glue(' survival::Surv({variable}, {variable_event})~{base_relation}')),data=dataset)
 
       # in order to get all parameters that are ot allowed to be removed
       cov_base <- gsub('\\*', "\\+",base_relation)
       cov_base <- unlist(unique(stringr::str_split(cov_base, "\\+")))
 
       cov_base_tmp <- broom::tidy(mod0)%>%
-        filter(term!='(Intercept)')%>%
-        filter(str_detect(term,':')) %>%
-        pull(term) %>% unique()
+        dplyr::filter(term!='(Intercept)')%>%
+        dplyr::filter(str_detect(term,':')) %>%
+        dplyr::pull(term) %>% unique()
 
       # sometimes with correlation it is reported as A:B or B:A, so I take both cases in the list to be sure
       splits <- strsplit(cov_base_tmp, ":")
@@ -200,20 +200,20 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
     }else if (is.null(base_relation) & regression=='ordered-categorical') {
 
       if (!is.null(weights_ordered)){
-        mod0=MASS::polr(as.formula(glue('{variable} ~ 1')),data=dataset, Hess = T,weights=eval(sym(weights_ordered))) ## Hess=T added to avoid error message, see https://stackoverflow.com/questions/39151409/potential-bug-in-rs-polr-function-when-run-from-a-function-environment
+        mod0=MASS::polr(as.formula(glue::glue('{variable} ~ 1')),data=dataset, Hess = T,weights=eval(sym(weights_ordered))) ## Hess=T added to avoid error message, see https://stackoverflow.com/questions/39151409/potential-bug-in-rs-polr-function-when-run-from-a-function-environment
 
       } else if (is.null(weights_ordered)){
 
-        mod0=MASS::polr(as.formula(glue('{variable} ~ 1')),data=dataset, Hess = T)
+        mod0=MASS::polr(as.formula(glue::glue('{variable} ~ 1')),data=dataset, Hess = T)
       }
 
     }else if (!is.null(base_relation) & regression=='ordered-categorical') {
 
       if (!is.null(weights_ordered)){
-        mod0=MASS::polr(as.formula(glue('{variable} ~ {base_relation}')),data=dataset, Hess = T,weights=eval(sym(weights_ordered)))
+        mod0=MASS::polr(as.formula(glue::glue('{variable} ~ {base_relation}')),data=dataset, Hess = T,weights=eval(sym(weights_ordered)))
 
       } else if (is.null(weights_ordered)){
-        mod0=MASS::polr(as.formula(glue('{variable} ~ {base_relation}')),data=dataset, Hess = T)
+        mod0=MASS::polr(as.formula(glue::glue('{variable} ~ {base_relation}')),data=dataset, Hess = T)
 
       }
       # in order to get all parameters that are ot allowed to be removed
@@ -223,11 +223,11 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
       cov_base_tmp <- broom::tidy(mod0)%>%
         dplyr::filter(coef.type!='scale')%>%
         dplyr::filter(str_detect(term,':')) %>%
-        pull(term) %>% unique()
+        dplyr::pull(term) %>% unique()
 
       # sometimes with correlation it is reported as A:B or B:A, so I take both cases in the list to be sure
       splits <- strsplit(cov_base_tmp, ":")
-      reversed <- map(splits, rev)
+      reversed <- purr::map(splits, rev)
       cov_base_tmp2 <- map_chr(reversed , paste, collapse = ":")
       cov_base <- c(cov_base_tmp2,cov_base_tmp,cov_base)
       cov_base <-unique(cov_base)
@@ -241,23 +241,23 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
       #i=3
       if (i==1 & is.null(base_relation)) {
-        tutu <-  add1(mod0,scope = as.formula(glue('~ {coco}')),data=dataset,trace=tracelog,test='Chisq')
+        tutu <-  add1(mod0,scope = as.formula(glue::glue('~ {coco}')),data=dataset,trace=tracelog,test='Chisq')
 
       } else if (i==1 & !is.null(base_relation)) {
-        tutu <-  add1(mod0,scope = as.formula(glue('~ . +{coco}')),data=dataset,trace=tracelog,test='Chisq')
+        tutu <-  add1(mod0,scope = as.formula(glue::glue('~ . +{coco}')),data=dataset,trace=tracelog,test='Chisq')
 
 
       } else if (i>1 & is.null(base_relation)){
 
-        coco_select_forw_reg <- glue_collapse(coco_select_forw , sep = "+")
+        coco_select_forw_reg <- glue::glue_collapse(coco_select_forw , sep = "+")
 
-        tutu <-  add1(update(mod0, as.formula(glue(' ~ . + {coco_select_forw_reg}'))),scope = as.formula(glue('~ {coco}')),data=dataset,trace=tracelog,test='Chisq')
+        tutu <-  add1(update(mod0, as.formula(glue::glue(' ~ . + {coco_select_forw_reg}'))),scope = as.formula(glue::glue('~ {coco}')),data=dataset,trace=tracelog,test='Chisq')
 
       } else if (i>1 & !is.null(base_relation)){
 
-        coco_select_forw_reg <- glue_collapse(coco_select_forw , sep = "+")
+        coco_select_forw_reg <- glue::glue_collapse(coco_select_forw , sep = "+")
 
-        tutu <-  add1(update(mod0, as.formula(glue(' ~ . + {coco_select_forw_reg}'))),scope = as.formula(glue('~ .+{coco}')),data=dataset,trace=tracelog,test='Chisq')
+        tutu <-  add1(update(mod0, as.formula(glue::glue(' ~ . + {coco_select_forw_reg}'))),scope = as.formula(glue::glue('~ .+{coco}')),data=dataset,trace=tracelog,test='Chisq')
 
       }
 
@@ -266,16 +266,16 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
         print(glue::glue_col('{col_red Forward step completed, {max_steps} max forward steps reached}'))
 
-        print(glue::glue_col('{col_green covariate(s) {glue_collapse(coco_select_forw,sep=", ",last=" and ")} selected }'))
+        print(glue::glue_col('{col_green covariate(s) {glue::glue_collapse(coco_select_forw,sep=", ",last=" and ")} selected }'))
 
-        print(summary(update(mod0, as.formula(glue(' ~ .+ {coco_select_forw_reg}')))))
+        print(summary(update(mod0, as.formula(glue::glue(' ~ .+ {coco_select_forw_reg}')))))
 
-        reg.full <- update(mod0, as.formula(glue(' ~ .+ {coco_select_forw_reg}')))
+        reg.full <- update(mod0, as.formula(glue::glue(' ~ .+ {coco_select_forw_reg}')))
 
 
         coco_select_forw_tot_string <- as.character(reg.full$terms[[3]])  # to take into account potential base relationship
 
-        coco_select_forw_tot <- unlist(unique(str_split(coco_select_forw_tot_string, ' ')))
+        coco_select_forw_tot <- unlist(unique(stringr::str_split(coco_select_forw_tot_string, ' ')))
         coco_select_forw_tot <- coco_select_forw_tot[!coco_select_forw_tot %in% '+'] # to remove + and keep only real covariates
 
         #if (length(coco_select_forw)>=2) {  # 2 covariates needed for interaction
@@ -305,13 +305,13 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
           dplyr::filter(p.value<=p_forward)%>%
           dplyr::arrange(p.value) %>%
           dplyr::slice(1) %>%
-          pull(term) %>% unique()
+          dplyr::pull(term) %>% unique()
 
       } else if (i==1 & test_used=='AIC' ) {
 
         # get AIC of reference model
         AIC_ref <- broom::tidy(tutu) %>%
-          dplyr::filter(term=='<none>') %>% pull(AIC)
+          dplyr::filter(term=='<none>') %>% dplyr::pull(AIC)
 
 
         coco_select_forw_tmp <- broom::tidy(tutu)%>%
@@ -319,7 +319,7 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
           dplyr::filter(AIC<=AIC_ref)%>%
           dplyr::arrange(AIC) %>%
           dplyr::slice(1) %>%
-          pull(term) %>% unique()
+          dplyr::pull(term) %>% unique()
 
 
 
@@ -329,14 +329,14 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
         # get AIC of reference model
         AIC_ref <- broom::tidy(tutu) %>%
-          filter(term=='<none>') %>% pull(AIC)
+          dplyr::filter(term=='<none>') %>% dplyr::pull(AIC)
 
         if (!is.null(cov_corr)){
           for (t in coco_select_forw) {
             if (any(map_lgl(cov_corr, `%in%`, x = t))) {
-              coco_select_forw_tmp_2 <- filter(coco_select_forw_tmp_2, !term %in% unlist(cov_corr[map_lgl(cov_corr, `%in%`, x =t)]))
+              coco_select_forw_tmp_2 <- dplyr::filter(coco_select_forw_tmp_2, !term %in% unlist(cov_corr[map_lgl(cov_corr, `%in%`, x =t)]))
             }else {
-              coco_select_forw_tmp_2 <-  filter(coco_select_forw_tmp_2, !is.na(term))
+              coco_select_forw_tmp_2 <-  dplyr::filter(coco_select_forw_tmp_2, !is.na(term))
             }
           }
         }
@@ -346,7 +346,7 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
             dplyr::filter(p.value<=p_forward)%>%
             dplyr::arrange(p.value) %>%
             dplyr::slice(1) %>%
-            pull(term) %>% unique()
+            dplyr::pull(term) %>% unique()
 
         } else if (test_used=='AIC') {
 
@@ -356,7 +356,7 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
             dplyr::filter(AIC<=AIC_ref)%>%
             dplyr::arrange(AIC) %>%
             dplyr::slice(1) %>%
-            pull(term) %>% unique()}
+            dplyr::pull(term) %>% unique()}
       }
 
       if (!rlang::is_empty(coco_select_forw_tmp)) {
@@ -367,18 +367,18 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
       if (rlang::is_empty(coco_select_forw_tmp)) {
 
-        print(glue_col('{col_red Forward step completed}'))
+        print(glue::glue_col('{col_red Forward step completed}'))
         tabtot <- rbind(tabtot,broom::tidy(tutu)%>% dplyr::mutate(direction='forward',
                                                                   step=i,
                                                                   select=0))
 
         if (!is.null(coco_select_forw)) {
 
-          print(glue_col('{col_green covariate(s) {glue::glue_collapse(coco_select_forw,sep=", ",last=" and ")} selected }'))
+          print(glue::glue_col('{col_green covariate(s) {glue::glue_collapse(coco_select_forw,sep=", ",last=" and ")} selected }'))
 
-          print(summary(update(mod0, as.formula(glue(' ~ .+ {coco_select_forw_reg}')))))
+          print(summary(update(mod0, as.formula(glue::glue(' ~ .+ {coco_select_forw_reg}')))))
 
-          reg.full <- update(mod0, as.formula(glue(' ~ .+ {coco_select_forw_reg}')))
+          reg.full <- update(mod0, as.formula(glue::glue(' ~ .+ {coco_select_forw_reg}')))
 
 
 
@@ -390,7 +390,7 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
         coco_select_forw_tot_string <- as.character(reg.full$terms[[3]])  # to take into account potential base relationship
 
-        coco_select_forw_tot <- unlist(unique(str_split(coco_select_forw_tot_string, ' ')))
+        coco_select_forw_tot <- unlist(unique(stringr::str_split(coco_select_forw_tot_string, ' ')))
 
         # remove '1' null model from list
         coco_select_forw_tot <-coco_select_forw_tot[!coco_select_forw_tot %in% '1']
@@ -418,27 +418,27 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
       }
 
-      print(glue('covariate {coco_select_forw_tmp} selected for step {i}'))
+      print(glue::glue('covariate {coco_select_forw_tmp} selected for step {i}'))
 
       coco_select_forw <- c(coco_select_forw, coco_select_forw_tmp)
       print(coco_select_forw)
 
       if (i==length(covariate.list)){
 
-        print(glue_col('{col_green covariate(s) {glue::glue_collapse(coco_select_forw,sep=", ",last=" and ")} selected }'))
+        print(glue::glue_col('{col_green covariate(s) {glue::glue_collapse(coco_select_forw,sep=", ",last=" and ")} selected }'))
 
 
 
 
         coco_select_forw_reg <- glue::glue_collapse(coco_select_forw , sep = "+")
 
-        print(summary(update(mod0, as.formula(glue(' ~ .+ {coco_select_forw_reg}')))))
+        print(summary(update(mod0, as.formula(glue::glue(' ~ .+ {coco_select_forw_reg}')))))
 
-        reg.full <- update(mod0, as.formula(glue(' ~ .+ {coco_select_forw_reg}')))
+        reg.full <- update(mod0, as.formula(glue::glue(' ~ .+ {coco_select_forw_reg}')))
 
         coco_select_forw_tot_string <- as.character(reg.full$terms[[3]])  # to take into account potential base relationship
 
-        coco_select_forw_tot <- unlist(unique(str_split(coco_select_forw_tot_string, ' ')))
+        coco_select_forw_tot <- unlist(unique(stringr::str_split(coco_select_forw_tot_string, ' ')))
         coco_select_forw_tot <- coco_select_forw_tot[!coco_select_forw_tot %in% '+'] # to remove + and keep only real covariates
 
         if (length(coco_select_forw_tot)>=2) {  # 2 covariates needed for interaction
@@ -477,7 +477,7 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
   }
 
   if (forw_inter_possible == FALSE) {
-    print(glue_col('{col_red Interaction step cannot be performed, not enough covariates included in the forward step}'))
+    print(glue::glue_col('{col_red Interaction step cannot be performed, not enough covariates included in the forward step}'))
 
 
   }
@@ -499,13 +499,13 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
       } else{
 
-        coco_select_inter <- glue_collapse(coco_select_forw , sep = "*")
+        coco_select_inter <- glue::glue_collapse(coco_select_forw , sep = "*")
       }
 
     } else if (!is.null(base_relation)){
 
       #cov_base_int <- gsub('\\*', "\\+",base_relation)
-      cov_base_int <- str_trim(unlist(unique(stringr::str_split(base_relation ,"\\+"))))
+      cov_base_int <- stringr::str_trim(unlist(unique(stringr::str_split(base_relation ,"\\+"))))
       cov_base_int <- cov_base_int[str_detect(cov_base_int,'\\*')]
       # sometimes with correlation it is reported as A:B or B:A, so I take both cases in the list to be sure
       if (!rlang::is_empty(cov_base_int)){
@@ -526,21 +526,21 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
       } else{
 
-        coco_select_inter <- glue_collapse(coco_select_forw_tot_tmp , sep = "*")
+        coco_select_inter <- glue::glue_collapse(coco_select_forw_tot_tmp , sep = "*")
       }
 
       coco_select_inter <- coco_select_inter[!coco_select_inter %in% cov_base_int]
     }
 
     #
-    coco3 <- glue_collapse(coco_select_inter , sep = "+")
+    coco3 <- glue::glue_collapse(coco_select_inter , sep = "+")
 
 
     for (i in 1:length(coco_select_inter)) {
       #i=1
       if (i==1) { #& is.null(base_relation)) {
         #tyty <-  add1(reg.full,scope = as.formula(glue('~ {coco3}')),data=dataset,trace=tracelog,test='Chisq')
-        tyty <-  add1(reg.full,scope = as.formula(glue('~ . + {coco3}')),data=dataset,trace=tracelog,test='Chisq')
+        tyty <-  add1(reg.full,scope = as.formula(glue::glue('~ . + {coco3}')),data=dataset,trace=tracelog,test='Chisq')
 
         #} else if (i==1 & !is.null(base_relation)){
 
@@ -548,9 +548,9 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
       } else {
 
-        coco_select_forw_inter_reg <- glue_collapse(coco_select_forw_inter , sep = "+")
+        coco_select_forw_inter_reg <- glue::glue_collapse(coco_select_forw_inter , sep = "+")
 
-        tyty <-  add1(update(reg.full, as.formula(glue(' ~ . + {coco_select_forw_inter_reg}'))),scope = as.formula(glue('~ {coco3}')),data=dataset,trace=tracelog,test='Chisq')
+        tyty <-  add1(update(reg.full, as.formula(glue::glue(' ~ . + {coco_select_forw_inter_reg}'))),scope = as.formula(glue::glue('~ {coco3}')),data=dataset,trace=tracelog,test='Chisq')
 
       }
 
@@ -560,50 +560,52 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
       if (test_used=='Chisq' ) {
         coco_select_forw_inter_tmp <- broom::tidy(tyty)%>%
-          filter(term!='<none>')  %>%
-          filter(p.value<=p_forward)%>%
-          arrange(p.value) %>%
-          slice(1) %>%
-          pull(term) %>% unique()
+          dplyr::filter(term!='<none>')  %>%
+          dplyr::filter(p.value<=p_forward)%>%
+          dplyr::arrange(p.value) %>%
+          dplyr::slice(1) %>%
+          dplyr::pull(term) %>% unique()
 
       } else if (test_used=='AIC' ){
 
         # get AIC of reference model
         AIC_ref <- broom::tidy(tyty) %>%
-          filter(term=='<none>') %>% pull(AIC)
+          dplyr::filter(term=='<none>') %>% dplyr::pull(AIC)
 
         coco_select_forw_inter_tmp <- broom::tidy(tyty)%>%
-          filter(term!='<none>')  %>%
-          filter(AIC<=AIC_ref)%>%
-          arrange(AIC) %>%
-          slice(1) %>%
-          pull(term) %>% unique()
+          dplyr::filter(term!='<none>')  %>%
+          dplyr::filter(AIC<=AIC_ref)%>%
+          dplyr::arrange(AIC) %>%
+          dplyr::slice(1) %>%
+          dplyr::pull(term) %>% unique()
 
       }
 
       if (!rlang::is_empty(coco_select_forw_inter_tmp)) {
-        tabtot <- rbind(tabtot,broom::tidy(tyty)%>% mutate(direction='forward interaction',
+        tabtot <- rbind(tabtot,broom::tidy(tyty)%>%
+                          dplyr::mutate(direction='forward interaction',
                                                            step=i,
                                                            select=ifelse(term==coco_select_forw_inter_tmp,1,0)))
       }
       if (rlang::is_empty(coco_select_forw_inter_tmp)) {
 
-        print(glue_col('{col_red Forward interaction step completed}'))
+        print(glue::glue_col('{col_red Forward interaction step completed}'))
 
-        tabtot <- rbind(tabtot,broom::tidy(tyty)%>% mutate(direction='forward interaction',
+        tabtot <- rbind(tabtot,broom::tidy(tyty)%>%
+                          dplyr::mutate(direction='forward interaction',
                                                            step=i,
                                                            select=0))
 
         if (!is.null(coco_select_forw_inter)) {
 
-          print(glue_col('{col_green covariate(s) {glue_collapse(coco_select_forw_inter,sep=", ",last=" and ")} selected }'))
+          print(glue::glue_col('{col_green covariate(s) {glue::glue_collapse(coco_select_forw_inter,sep=", ",last=" and ")} selected }'))
 
-          print(summary(update(reg.full, as.formula(glue(' ~ .+ {coco_select_forw_inter_reg}')))))
+          print(summary(update(reg.full, as.formula(glue::glue(' ~ .+ {coco_select_forw_inter_reg}')))))
 
-          reg.full <- update(reg.full, as.formula(glue(' ~ .+ {coco_select_forw_inter_reg}')))
+          reg.full <- update(reg.full, as.formula(glue::glue(' ~ .+ {coco_select_forw_inter_reg}')))
 
         } else {
-          print(glue_col('{col_green No interaction term included}'))
+          print(glue::glue_col('{col_green No interaction term included}'))
 
         }
         print(tabtot)
@@ -611,21 +613,21 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
         break
       }
 
-      print(glue('covariate {coco_select_forw_inter_tmp} selected for step {i}'))
+      print(glue::glue('covariate {coco_select_forw_inter_tmp} selected for step {i}'))
 
       coco_select_forw_inter <- c(coco_select_forw_inter, coco_select_forw_inter_tmp)
       print(coco_select_forw_inter)
 
       if (i==length(coco_select_inter)){
 
-        print(glue_col('{col_green covariate(s) {glue_collapse(coco_select_forw_inter,sep=", ",last=" and ")} selected }'))
+        print(glue::glue_col('{col_green covariate(s) {glue::glue_collapse(coco_select_forw_inter,sep=", ",last=" and ")} selected }'))
 
 
-        coco_select_forw_inter_reg <- glue_collapse(coco_select_forw_inter , sep = "+")
+        coco_select_forw_inter_reg <- glue::glue_collapse(coco_select_forw_inter , sep = "+")
 
-        print(summary(update(reg.full, as.formula(glue(' ~ .+ {coco_select_forw_inter_reg}')))))
+        print(summary(update(reg.full, as.formula(glue::glue(' ~ .+ {coco_select_forw_inter_reg}')))))
 
-        reg.full <- update(reg.full, as.formula(glue(' ~ .+ {coco_select_forw_inter_reg}')))
+        reg.full <- update(reg.full, as.formula(glue::glue(' ~ .+ {coco_select_forw_inter_reg}')))
 
 
       }
@@ -653,7 +655,7 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
     # test to be made
     coco_select_forw_tot_string <- as.character(reg.full$terms[[3]])  # to take into account potential base relationship
 
-    coco_select_forw_tot <- unlist(unique(str_split(coco_select_forw_tot_string, ' ')))
+    coco_select_forw_tot <- unlist(unique(stringr::str_split(coco_select_forw_tot_string, ' ')))
     coco_select_forw_tot <- coco_select_forw_tot[!coco_select_forw_tot %in% '+'] # to remove + and keep only real covariates
 
   }
@@ -669,15 +671,15 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
 
 
-    if (regression=='lm') { reg.full <- lm(as.formula(glue('{variable} ~{base_relation}')),data=dataset)
+    if (regression=='lm') { reg.full <- lm(as.formula(glue::glue('{variable} ~{base_relation}')),data=dataset)
 
     }
 
-    if (regression=='logistic') { reg.full <- glm(as.formula(glue('{variable} ~ {base_relation}')),data=dataset,family='binomial')
+    if (regression=='logistic') { reg.full <- glm(as.formula(glue::glue('{variable} ~ {base_relation}')),data=dataset,family='binomial')
 
     }
 
-    if (regression=='coxph') {reg.full <- survival::coxph(as.formula(glue(' survival::Surv({variable}, {variable_event})~{base_relation}')),data=dataset)
+    if (regression=='coxph') {reg.full <- survival::coxph(as.formula(glue::glue(' survival::Surv({variable}, {variable_event})~{base_relation}')),data=dataset)
 
     }
 
@@ -685,17 +687,17 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
       if (!is.null(weights_ordered)){
 
-        reg.full <- MASS::polr(as.formula(glue('{variable} ~ {base_relation}')),data=dataset, Hess = T,weights=eval(sym(weights_ordered)))
+        reg.full <- MASS::polr(as.formula(glue::glue('{variable} ~ {base_relation}')),data=dataset, Hess = T,weights=eval(sym(weights_ordered)))
 
       } else if (is.null(weights_ordered)){
 
-        reg.full <- MASS::polr(as.formula(glue('{variable} ~ {base_relation}')),data=dataset, Hess = T)
+        reg.full <- MASS::polr(as.formula(glue::glue('{variable} ~ {base_relation}')),data=dataset, Hess = T)
 
       }
     }
 
 
-    cov_base_int <- str_trim(unlist(unique(stringr::str_split(base_relation ,"\\+"))))
+    cov_base_int <- stringr::str_trim(unlist(unique(stringr::str_split(base_relation ,"\\+"))))
 
     if(any(str_detect(cov_base_int,'\\*'))) stop('Interaction term already included, please remove it from the base relation')
 
@@ -711,27 +713,27 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
     } else{
 
-      coco_select_inter <- glue_collapse(coco_select_forw_tot_tmp , sep = "*")
+      coco_select_inter <- glue::glue_collapse(coco_select_forw_tot_tmp , sep = "*")
     }
 
     coco_select_inter <- coco_select_inter[!coco_select_inter %in% cov_base_int]
 
     #
-    coco3 <- glue_collapse(coco_select_inter , sep = "+")
+    coco3 <- glue::glue_collapse(coco_select_inter , sep = "+")
 
 
     for (i in 1:length(coco_select_inter)) {
       #i=1
       if (i==1) { #& is.null(base_relation)) {
-        #tyty <-  add1(reg.full,scope = as.formula(glue('~ {coco3}')),data=dataset,trace=tracelog,test='Chisq')
-        tyty <-  add1(reg.full,scope = as.formula(glue('~ . + {coco3}')),data=dataset,trace=tracelog,test='Chisq')
+        #tyty <-  add1(reg.full,scope = as.formula(glue::glue('~ {coco3}')),data=dataset,trace=tracelog,test='Chisq')
+        tyty <-  add1(reg.full,scope = as.formula(glue::glue('~ . + {coco3}')),data=dataset,trace=tracelog,test='Chisq')
 
 
       } else {
 
-        coco_select_forw_inter_reg <- glue_collapse(coco_select_forw_inter , sep = "+")
+        coco_select_forw_inter_reg <- glue::glue_collapse(coco_select_forw_inter , sep = "+")
 
-        tyty <-  add1(update(reg.full, as.formula(glue(' ~ . + {coco_select_forw_inter_reg}'))),scope = as.formula(glue('~ {coco3}')),data=dataset,trace=tracelog,test='Chisq')
+        tyty <-  add1(update(reg.full, as.formula(glue::glue(' ~ . + {coco_select_forw_inter_reg}'))),scope = as.formula(glue::glue('~ {coco3}')),data=dataset,trace=tracelog,test='Chisq')
 
       }
 
@@ -745,49 +747,49 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
           dplyr::filter(p.value<=p_forward)%>%
           dplyr::arrange(p.value) %>%
           dplyr::slice(1) %>%
-          pull(term) %>% unique()
+          dplyr::pull(term) %>% unique()
 
       } else if(test_used=='AIC' ) {
 
 
         # get AIC of reference model
         AIC_ref <- broom::tidy(tyty) %>%
-          filter(term=='<none>') %>% pull(AIC)
+          dplyr::filter(term=='<none>') %>% dplyr::pull(AIC)
 
         coco_select_forw_inter_tmp <- broom::tidy(tyty)%>%
           dplyr::filter(term!='<none>')  %>%
           dplyr::filter(AIC<=AIC_ref)%>%
           dplyr::arrange(AIC) %>%
           dplyr::slice(1) %>%
-          pull(term) %>% unique()
+          dplyr::pull(term) %>% unique()
 
       }
 
 
 
       if (!rlang::is_empty(coco_select_forw_inter_tmp)) {
-        tabtot <- rbind(tabtot,broom::tidy(tyty)%>% mutate(direction='forward interaction',
+        tabtot <- rbind(tabtot,broom::tidy(tyty)%>% dplyr::mutate(direction='forward interaction',
                                                            step=i,
                                                            select=ifelse(term==coco_select_forw_inter_tmp,1,0)))
       }
       if (rlang::is_empty(coco_select_forw_inter_tmp)) {
 
-        print(glue_col('{col_red Forward interaction step completed}'))
+        print(glue::glue_col('{col_red Forward interaction step completed}'))
 
-        tabtot <- rbind(tabtot,broom::tidy(tyty)%>% mutate(direction='forward interaction',
+        tabtot <- rbind(tabtot,broom::tidy(tyty)%>% dplyr::mutate(direction='forward interaction',
                                                            step=i,
                                                            select=0))
 
         if (!is.null(coco_select_forw_inter)) {
 
-          print(glue_col('{col_green covariate(s) {glue_collapse(coco_select_forw_inter,sep=", ",last=" and ")} selected }'))
+          print(glue::glue_col('{col_green covariate(s) {glue::glue_collapse(coco_select_forw_inter,sep=", ",last=" and ")} selected }'))
 
-          print(summary(update(reg.full, as.formula(glue(' ~ .+ {coco_select_forw_inter_reg}')))))
+          print(summary(update(reg.full, as.formula(glue::glue(' ~ .+ {coco_select_forw_inter_reg}')))))
 
-          reg.full <- update(reg.full, as.formula(glue(' ~ .+ {coco_select_forw_inter_reg}')))
+          reg.full <- update(reg.full, as.formula(glue::glue(' ~ .+ {coco_select_forw_inter_reg}')))
 
         } else {
-          print(glue_col('{col_green No interaction term included}'))
+          print(glue::glue_col('{col_green No interaction term included}'))
 
         }
         print(tabtot)
@@ -795,21 +797,21 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
         break
       }
 
-      print(glue('covariate {coco_select_forw_inter_tmp} selected for step {i}'))
+      print(glue::glue('covariate {coco_select_forw_inter_tmp} selected for step {i}'))
 
       coco_select_forw_inter <- c(coco_select_forw_inter, coco_select_forw_inter_tmp)
       print(coco_select_forw_inter)
 
       if (i==length(coco_select_inter)){
 
-        print(glue_col('{col_green covariate(s) {glue_collapse(coco_select_forw_inter,sep=", ",last=" and ")} selected }'))
+        print(glue::glue_col('{col_green covariate(s) {glue::glue_collapse(coco_select_forw_inter,sep=", ",last=" and ")} selected }'))
 
 
-        coco_select_forw_inter_reg <- glue_collapse(coco_select_forw_inter , sep = "+")
+        coco_select_forw_inter_reg <- glue::glue_collapse(coco_select_forw_inter , sep = "+")
 
-        print(summary(update(reg.full, as.formula(glue(' ~ .+ {coco_select_forw_inter_reg}')))))
+        print(summary(update(reg.full, as.formula(glue::glue(' ~ .+ {coco_select_forw_inter_reg}')))))
 
-        reg.full <- update(reg.full, as.formula(glue(' ~ .+ {coco_select_forw_inter_reg}')))
+        reg.full <- update(reg.full, as.formula(glue::glue(' ~ .+ {coco_select_forw_inter_reg}')))
 
 
       }
@@ -837,7 +839,7 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
     # test to be made
     coco_select_forw_tot_string <- as.character(reg.full$terms[[3]])  # to take into account potential base relationship
 
-    coco_select_forw_tot <- unlist(unique(str_split(coco_select_forw_tot_string, ' ')))
+    coco_select_forw_tot <- unlist(unique(stringr::str_split(coco_select_forw_tot_string, ' ')))
     coco_select_forw_tot <- coco_select_forw_tot[!coco_select_forw_tot %in% '+'] # to remove + and keep only real covariates
 
   }
@@ -859,24 +861,24 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
     cocoback <- full_relation
 
-    if (regression=='lm') { reg.full <- lm(as.formula(glue('{variable} ~ {cocoback}')),data=dataset)
+    if (regression=='lm') { reg.full <- lm(as.formula(glue::glue('{variable} ~ {cocoback}')),data=dataset)
 
     }
 
-    if (regression=='logistic') { reg.full <- glm(as.formula(glue('{variable} ~ {cocoback}')),data=dataset,family='binomial')
+    if (regression=='logistic') { reg.full <- glm(as.formula(glue::glue('{variable} ~ {cocoback}')),data=dataset,family='binomial')
 
     }
 
-    if (regression=='coxph') {reg.full <- survival::coxph(as.formula(glue(' survival::Surv({variable}, {variable_event})~{cocoback}')),data=dataset)
+    if (regression=='coxph') {reg.full <- survival::coxph(as.formula(glue::glue(' survival::Surv({variable}, {variable_event})~{cocoback}')),data=dataset)
 
     }
 
     if (regression=='ordered-categorical') {
       if (!is.null(weights_ordered)){
-        reg.full <- MASS::polr(as.formula(glue('{variable} ~ {cocoback}')),data=dataset, Hess = T,weights=eval(sym(weights_ordered)))
+        reg.full <- MASS::polr(as.formula(glue::glue('{variable} ~ {cocoback}')),data=dataset, Hess = T,weights=eval(sym(weights_ordered)))
 
       }else if (is.null(weights_ordered)){
-        reg.full <- MASS::polr(as.formula(glue('{variable} ~ {cocoback}')),data=dataset, Hess = T)
+        reg.full <- MASS::polr(as.formula(glue::glue('{variable} ~ {cocoback}')),data=dataset, Hess = T)
 
 
       }
@@ -891,16 +893,16 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
     }else if (!is.null(base_relation) & regression=='lm') {
       #base_relation <- 'lsoda*coca +orangina'
 
-      mod0bis=lm(as.formula(glue('{variable} ~ {base_relation}')),data=dataset)
+      mod0bis=lm(as.formula(glue::glue('{variable} ~ {base_relation}')),data=dataset)
 
       # in order to get all parameters that are ot allowed to be removed
       cov_base2 <- gsub('\\*', "\\+",base_relation)
-      cov_base2 <- str_trim(unlist(unique(stringr::str_split(cov_base2, "\\+"))))
+      cov_base2 <- stringr::str_trim(unlist(unique(stringr::str_split(cov_base2, "\\+"))))
 
       cov_base2_tmp <- broom::tidy(mod0bis)%>%
-        filter(term!='(Intercept)')%>%
-        filter(str_detect(term,':')) %>%
-        pull(term) %>% unique()
+        dplyr::filter(term!='(Intercept)')%>%
+        dplyr::filter(str_detect(term,':')) %>%
+        dplyr::pull(term) %>% unique()
 
       # sometimes with correlation it is reported as A:B or B:A, so I take both cases in the list to be sure
       splits <- strsplit(cov_base2_tmp, ":")
@@ -912,7 +914,7 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
     }else if (!is.null(base_relation) & regression=='logistic') {
       #
-      mod0bis=glm(as.formula(glue('{variable} ~ {base_relation}')),data=dataset,family='binomial')
+      mod0bis=glm(as.formula(glue::glue('{variable} ~ {base_relation}')),data=dataset,family='binomial')
 
       # in order to get all parameters that are ot allowed to be removed
       cov_base2 <- gsub('\\*', "\\+",base_relation)
@@ -921,7 +923,7 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
       cov_base2_tmp <- broom::tidy(mod0bis)%>%
         dplyr::filter(term!='(Intercept)')%>%
         dplyr::filter(str_detect(term,':')) %>%
-        pull(term) %>% unique()
+        dplyr::pull(term) %>% unique()
 
       # sometimes with correlation it is reported as A:B or B:A, so I take both cases in the list to be sure
       splits <- strsplit(cov_base2_tmp, ":")
@@ -934,7 +936,7 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
     }else if (!is.null(base_relation) & regression=='coxph') {
       #base_relation <- 'lsoda*coca +orangina'
 
-      mod0bis=survival::coxph(as.formula(glue(' survival::Surv({variable}, {variable_event})~{base_relation}')),data=dataset)
+      mod0bis=survival::coxph(as.formula(glue::glue(' survival::Surv({variable}, {variable_event})~{base_relation}')),data=dataset)
 
       # in order to get all parameters that are ot allowed to be removed
       cov_base2 <- gsub('\\*', "\\+",base_relation)
@@ -943,7 +945,7 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
       cov_base2_tmp <- broom::tidy(mod0bis)%>%
         dplyr::filter(term!='(Intercept)')%>%
         dplyr::filter(str_detect(term,':')) %>%
-        pull(term) %>% unique()
+        dplyr::pull(term) %>% unique()
 
       # sometimes with correlation it is reported as A:B or B:A, so I take both cases in the list to be sure
       splits <- strsplit(cov_base2_tmp, ":")
@@ -956,11 +958,11 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
       #base_relation <- 'lsoda*coca +orangina'
 
       if (!is.null(weights_ordered)){
-        mod0bis=MASS::polr(as.formula(glue(' survival::Surv({variable}, {variable_event})~{base_relation}')),data=dataset, Hess = T,weights=eval(sym(weights_ordered)))
+        mod0bis=MASS::polr(as.formula(glue::glue(' survival::Surv({variable}, {variable_event})~{base_relation}')),data=dataset, Hess = T,weights=eval(sym(weights_ordered)))
 
       } else if (is.null(weights_ordered)) {
 
-        mod0bis=MASS::polr(as.formula(glue(' survival::Surv({variable}, {variable_event})~{base_relation}')),data=dataset, Hess = T)
+        mod0bis=MASS::polr(as.formula(glue::glue(' survival::Surv({variable}, {variable_event})~{base_relation}')),data=dataset, Hess = T)
 
       }
       # in order to get all parameters that are ot allowed to be removed
@@ -970,7 +972,7 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
       cov_base2_tmp <- broom::tidy(mod0bis)%>%
         dplyr::filter(coef.type!='scale')%>%
         dplyr::filter(str_detect(term,':')) %>%
-        pull(term) %>% unique()
+        dplyr::pull(term) %>% unique()
 
       # sometimes with correlation it is reported as A:B or B:A, so I take both cases in the list to be sure
       splits <- strsplit(cov_base2_tmp, ":")
@@ -983,20 +985,20 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
     ## Definition of coco_select_forw_tot and coco_select_forw
     # in order to get all parameters that are ot allowed to be removed
     coco_select_forw_tot <- gsub('\\*', "\\+",full_relation)
-    coco_select_forw_tot <- str_trim(unlist(unique(stringr::str_split(coco_select_forw_tot, "\\+"))))
+    coco_select_forw_tot <- stringr::str_trim(unlist(unique(stringr::str_split(coco_select_forw_tot, "\\+"))))
 
     if (regression != 'ordered-categorical') {
       coco_select_forw_tot_tmp <- broom::tidy(reg.full)%>%
         dplyr::filter(term!='(Intercept)')%>%
         dplyr::filter(str_detect(term,':')) %>%
-        pull(term) %>% unique()
+        dplyr::pull(term) %>% unique()
 
     } else if (regression == 'ordered-categorical') {
 
       coco_select_forw_tot_tmp <- broom::tidy(reg.full)%>%
         dplyr::filter(coef.type!='scale')%>%
         dplyr::filter(str_detect(term,':')) %>%
-        pull(term) %>% unique()
+        dplyr::pull(term) %>% unique()
     }
 
 
@@ -1017,9 +1019,9 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
     cov_base <- unlist(unique(stringr::str_split(cov_base, "\\+")))
 
     cov_base_tmp <- broom::tidy(mod0)%>%
-      filter(term!='(Intercept)')%>%
-      filter(str_detect(term,':')) %>%
-      pull(term) %>% unique()
+      dplyr::filter(term!='(Intercept)')%>%
+      dplyr::filter(str_detect(term,':')) %>%
+      dplyr::pull(term) %>% unique()
 
     # sometimes with correlation it is reported as A:B or B:A, so I take both cases in the list to be sure
     splits <- strsplit(cov_base_tmp, ":")
@@ -1043,9 +1045,9 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
       }  else {
 
-        coco_select_back_reg <- glue_collapse(coco_select_back , sep = "-")
+        coco_select_back_reg <- glue::glue_collapse(coco_select_back , sep = "-")
 
-        tata <-  drop1(update(reg.full, as.formula(glue(' ~ .-{coco_select_back_reg}'))),data=dataset,trace=tracelog,test='Chisq')
+        tata <-  drop1(update(reg.full, as.formula(glue::glue(' ~ .-{coco_select_back_reg}'))),data=dataset,trace=tracelog,test='Chisq')
 
 
       }
@@ -1057,36 +1059,36 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
         coco_select_back_tmp <- broom::tidy(tata)%>%
           dplyr::filter(term!='<none>')  %>%
           ##filter(term!='variable_to_keep_if_needed')  %>%
-          {if (!is.null(cov_base)) filter(., !term %in% cov_base) else filter(., !is.na(term))} %>%
-          {if (!is.null(cov_base2)) filter(., !term %in% cov_base2) else filter(., !is.na(term))} %>%
+          {if (!is.null(cov_base)) dplyr::filter(., !term %in% cov_base) else dplyr::filter(., !is.na(term))} %>%
+          {if (!is.null(cov_base2)) dplyr::filter(., !term %in% cov_base2) else dplyr::filter(., !is.na(term))} %>%
           dplyr::filter(p.value>p_backward)%>%
           dplyr::arrange(-p.value) %>%
           dplyr::slice(1) %>%
-          pull(term) %>% unique()
+          dplyr::pull(term) %>% unique()
 
       } else if (test_used=='AIC' ) {
 
         # get AIC of reference model
         AIC_ref <- broom::tidy(tata) %>%
-          filter(term=='<none>') %>% pull(AIC)
+          dplyr::filter(term=='<none>') %>% dplyr::pull(AIC)
 
 
         coco_select_back_tmp <- broom::tidy(tata)%>%
-          filter(term!='<none>')  %>%
+          dplyr::filter(term!='<none>')  %>%
 
-          {if (!is.null(cov_base)) filter(., !term %in% cov_base) else filter(., !is.na(term))} %>%
-          {if (!is.null(cov_base2)) filter(., !term %in% cov_base2) else filter(., !is.na(term))} %>%
+          {if (!is.null(cov_base)) dplyr::filter(., !term %in% cov_base) else dplyr::filter(., !is.na(term))} %>%
+          {if (!is.null(cov_base2)) dplyr::filter(., !term %in% cov_base2) else dplyr::filter(., !is.na(term))} %>%
           dplyr::filter(AIC<=AIC_ref)%>%
           dplyr::arrange(AIC) %>%
           dplyr::slice(1) %>%
-          pull(term) %>% unique()
+          dplyr::pull(term) %>% unique()
 
       }
 
       print(coco_select_back_tmp)
 
       if (!rlang::is_empty(coco_select_back_tmp)) {
-        tabtot <- rbind(tabtot,broom::tidy(tata)%>% mutate(direction='backward',
+        tabtot <- rbind(tabtot,broom::tidy(tata)%>% dplyr::mutate(direction='backward',
                                                            step=j,
                                                            select=ifelse(term==coco_select_back_tmp,1,0)))
 
@@ -1094,7 +1096,7 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
       if (rlang::is_empty(coco_select_back_tmp)) {
 
-        tabtot <- rbind(tabtot,broom::tidy(tata)%>% mutate(direction='backward',
+        tabtot <- rbind(tabtot,broom::tidy(tata)%>% dplyr::mutate(direction='backward',
                                                            step=j,
                                                            select=0))
         if (!is.null(coco_select_back)) {
@@ -1111,58 +1113,58 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
           final_cov <- coco_select_forw_tot[!(coco_select_forw_tot) %in% coco_select_back_fin] # includes covariate of the base relationship
 
-          print(glue_col('{col_red Backward step completed}'))
+          print(glue::glue_col('{col_red Backward step completed}'))
 
-          print(glue_col('{col_green covariate(s) {glue_collapse(coco_select_back,sep=", ",last=" and ")} removed}'))
+          print(glue::glue_col('{col_green covariate(s) {glue::glue_collapse(coco_select_back,sep=", ",last=" and ")} removed}'))
 
         }  else {
-          print(glue_col('{col_green No covariate removed}'))
+          print(glue::glue_col('{col_green No covariate removed}'))
 
           final_cov_back <- coco_select_forw# covariate not in the base relationship
           final_cov <- coco_select_forw_tot # includes covariate of the base relationship
-          print(glue_col('{col_red Backward step completed}'))
+          print(glue::glue_col('{col_red Backward step completed}'))
 
         }
 
 
         if (!rlang::is_empty(final_cov_back) & is.null(cov_base)) {
-          print(glue_col('{col_blue final model includes {glue_collapse(final_cov,sep=", ",last=" and ")} }'))
+          print(glue::glue_col('{col_blue final model includes {glue::glue_collapse(final_cov,sep=", ",last=" and ")} }'))
 
           print(tabtot)
 
-          final_cov_reg <- glue_collapse(final_cov, sep = "+")
+          final_cov_reg <- glue::glue_collapse(final_cov, sep = "+")
 
         } else if (rlang::is_empty(final_cov_back) & is.null(cov_base)) {
 
           final_cov_reg <- 1  ## or final_cov_reg <- 'variable_to_keep_if_needed'
-          print(glue_col('{col_blue final model does not include any covariate}'))
+          print(glue::glue_col('{col_blue final model does not include any covariate}'))
 
         } else if (!rlang::is_empty(final_cov_back) & !is.null(cov_base)){
 
-          print(glue_col('{col_blue final model includes {glue_collapse(final_cov_back,sep=", ",last=" and ")} on top of the base relationship}'))
+          print(glue::glue_col('{col_blue final model includes {glue::glue_collapse(final_cov_back,sep=", ",last=" and ")} on top of the base relationship}'))
 
           print(tabtot)
 
-          final_cov_reg <- glue_collapse(final_cov, sep = "+")
+          final_cov_reg <- glue::glue_collapse(final_cov, sep = "+")
 
         } else if (rlang::is_empty(final_cov_back) & !is.null(cov_base)) {
 
           final_cov_reg <- base_relation  ## or final_cov_reg <- 'variable_to_keep_if_needed'
-          print(glue_col('{col_blue final model does not include any additional covariate}'))
+          print(glue::glue_col('{col_blue final model does not include any additional covariate}'))
 
         }
 
 
-        if (regression=='lm') final_mod <- lm(as.formula(glue('{variable} ~ {final_cov_reg}')),data=dataset)
-        if (regression=='logistic') final_mod <- glm(as.formula(glue('{variable} ~ {final_cov_reg}')),data=dataset,family='binomial')
-        if (regression=='coxph') final_mod <- survival::coxph(as.formula(glue(' survival::Surv({variable}, {variable_event})~{final_cov_reg}')),data=dataset)
+        if (regression=='lm') final_mod <- lm(as.formula(glue::glue('{variable} ~ {final_cov_reg}')),data=dataset)
+        if (regression=='logistic') final_mod <- glm(as.formula(glue::glue('{variable} ~ {final_cov_reg}')),data=dataset,family='binomial')
+        if (regression=='coxph') final_mod <- survival::coxph(as.formula(glue::glue(' survival::Surv({variable}, {variable_event})~{final_cov_reg}')),data=dataset)
         if (regression=='ordered-categorical') {
           if (!is.null(weights_ordered)){
-            final_mod <- MASS::polr(as.formula(glue('{variable} ~ {final_cov_reg}')),data=dataset, Hess = T,weights=eval(sym(weights_ordered)))
+            final_mod <- MASS::polr(as.formula(glue::glue('{variable} ~ {final_cov_reg}')),data=dataset, Hess = T,weights=eval(sym(weights_ordered)))
 
           } else if (is.null(weights_ordered)) {
 
-            final_mod <- MASS::polr(as.formula(glue('{variable} ~ {final_cov_reg}')),data=dataset, Hess = T)
+            final_mod <- MASS::polr(as.formula(glue::glue('{variable} ~ {final_cov_reg}')),data=dataset, Hess = T)
 
           }
         }
@@ -1171,7 +1173,7 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
         break
       }
 
-      print(glue('covariate {coco_select_back_tmp} removed in step {j}'))
+      print(glue::glue('covariate {coco_select_back_tmp} removed in step {j}'))
       coco_select_back <- c(coco_select_back,coco_select_back_tmp)
       print(coco_select_back)
 
@@ -1179,16 +1181,16 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
       ## to check , probably already covered by other conditions
       #  if (i==length(coco_select_forw_tot)){
       #
-      #    final_cov_reg <- glue_collapse(final_cov, sep = "+")
+      #    final_cov_reg <- glue::glue_collapse(final_cov, sep = "+")
 
-      #    if (regression=='lm') final_mod <- lm(as.formula(glue('{variable} ~ {final_cov_reg}')),data=dataset)
-      #    if (regression=='logistic') final_mod <- glm(as.formula(glue('{variable} ~ {final_cov_reg}')),data=dataset,family='binomial')
-      #    if (regression=='coxph') final_mod <- survival::coxph(as.formula(glue(' survival::Surv({variable}, {variable_event})~{final_cov_reg}')),data=dataset)
+      #    if (regression=='lm') final_mod <- lm(as.formula(glue::glue('{variable} ~ {final_cov_reg}')),data=dataset)
+      #    if (regression=='logistic') final_mod <- glm(as.formula(glue::glue('{variable} ~ {final_cov_reg}')),data=dataset,family='binomial')
+      #    if (regression=='coxph') final_mod <- survival::coxph(as.formula(glue::glue(' survival::Surv({variable}, {variable_event})~{final_cov_reg}')),data=dataset)
       #    if (regression=='ordered-categorical') {
       #  if (!is.null(weights_ordered)){
-      #  final_mod <- MASS::polr(as.formula(glue('{variable} ~ {final_cov_reg}')),data=dataset, Hess = T,weights=eval(sym(weights_ordered)))
+      #  final_mod <- MASS::polr(as.formula(glue::glue('{variable} ~ {final_cov_reg}')),data=dataset, Hess = T,weights=eval(sym(weights_ordered)))
       #  } else if (is.null(weights_ordered)){
-      #    final_mod <- MASS::polr(as.formula(glue('{variable} ~ {final_cov_reg}')),data=dataset, Hess = T)
+      #    final_mod <- MASS::polr(as.formula(glue::glue('{variable} ~ {final_cov_reg}')),data=dataset, Hess = T)
       #
       #}
       #  }
