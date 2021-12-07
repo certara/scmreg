@@ -142,8 +142,8 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
       # sometimes with correlation it is reported as A:B or B:A, so I take both cases in the list to be sure
       splits <- strsplit(cov_base_tmp, ":")
-      reversed <- map(splits, rev)
-      cov_base_tmp2 <- map_chr(reversed , paste, collapse = ":")
+      reversed <- purr::map(splits, rev)
+      cov_base_tmp2 <- purr::map_chr(reversed , paste, collapse = ":")
       cov_base <- c(cov_base_tmp2,cov_base_tmp,cov_base)
       cov_base <-unique(cov_base)
 
@@ -167,8 +167,8 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
       # sometimes with correlation it is reported as A:B or B:A, so I take both cases in the list to be sure
       splits <- strsplit(cov_base_tmp, ":")
-      reversed <- map(splits, rev)
-      cov_base_tmp2 <- map_chr(reversed , paste, collapse = ":")
+      reversed <- purrr::map(splits, rev)
+      cov_base_tmp2 <- purrr::map_chr(reversed , paste, collapse = ":")
       cov_base <- c(cov_base_tmp2,cov_base_tmp,cov_base)
       cov_base <-unique(cov_base)
 
@@ -192,8 +192,8 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
       # sometimes with correlation it is reported as A:B or B:A, so I take both cases in the list to be sure
       splits <- strsplit(cov_base_tmp, ":")
-      reversed <- map(splits, rev)
-      cov_base_tmp2 <- map_chr(reversed , paste, collapse = ":")
+      reversed <- purrr::map(splits, rev)
+      cov_base_tmp2 <- purrr::map_chr(reversed , paste, collapse = ":")
       cov_base <- c(cov_base_tmp2,cov_base_tmp,cov_base)
       cov_base <-unique(cov_base)
 
@@ -227,8 +227,8 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
       # sometimes with correlation it is reported as A:B or B:A, so I take both cases in the list to be sure
       splits <- strsplit(cov_base_tmp, ":")
-      reversed <- purr::map(splits, rev)
-      cov_base_tmp2 <- map_chr(reversed , paste, collapse = ":")
+      reversed <- purrr::map(splits, rev)
+      cov_base_tmp2 <- purrr::map_chr(reversed , paste, collapse = ":")
       cov_base <- c(cov_base_tmp2,cov_base_tmp,cov_base)
       cov_base <-unique(cov_base)
 
@@ -333,8 +333,8 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
         if (!is.null(cov_corr)){
           for (t in coco_select_forw) {
-            if (any(map_lgl(cov_corr, `%in%`, x = t))) {
-              coco_select_forw_tmp_2 <- dplyr::filter(coco_select_forw_tmp_2, !term %in% unlist(cov_corr[map_lgl(cov_corr, `%in%`, x =t)]))
+            if (any(purrr::map_lgl(cov_corr, `%in%`, x = t))) {
+              coco_select_forw_tmp_2 <- dplyr::filter(coco_select_forw_tmp_2, !term %in% unlist(cov_corr[purrr::map_lgl(cov_corr, `%in%`, x =t)]))
             }else {
               coco_select_forw_tmp_2 <-  dplyr::filter(coco_select_forw_tmp_2, !is.na(term))
             }
@@ -495,7 +495,7 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
       if (length(coco_select_forw)>2) {  ## does not work when only 2 variables
 
-        coco_select_inter <-  map_chr(combn(coco_select_forw, 2,simplify=F),paste,collapse='*')
+        coco_select_inter <-  purrr::map_chr(combn(coco_select_forw, 2,simplify=F),paste,collapse='*')
 
       } else{
 
@@ -510,8 +510,8 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
       # sometimes with correlation it is reported as A:B or B:A, so I take both cases in the list to be sure
       if (!rlang::is_empty(cov_base_int)){
         splits <- strsplit(cov_base_int, "\\*")
-        reversed <-map(splits, rev)
-        cov_base_int_tmp <-map_chr(reversed , paste, collapse = '*')
+        reversed <-purrr::map(splits, rev)
+        cov_base_int_tmp <-purrr::map_chr(reversed , paste, collapse = '*')
         cov_base_int <- c(cov_base_int_tmp,cov_base_int)
         cov_base_int <-unique(cov_base_int)
       }
@@ -521,7 +521,7 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
       if (length(coco_select_forw_tot_tmp)>2) {  ## does not work when only 2 variables
 
         #i<-1
-        coco_select_inter <-  map_chr(combn(coco_select_forw_tot_tmp, 2,simplify=F),paste,collapse='*')
+        coco_select_inter <-  purrr::map_chr(combn(coco_select_forw_tot_tmp, 2,simplify=F),paste,collapse='*')
 
 
       } else{
@@ -708,7 +708,7 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
     if (length(coco_select_forw_tot_tmp)>2) {  ## does not work when only 2 variables
 
       #i<-1
-      coco_select_inter <-  map_chr(combn(coco_select_forw_tot_tmp, 2,simplify=F),paste,collapse='*')
+      coco_select_inter <-  purrr::map_chr(combn(coco_select_forw_tot_tmp, 2,simplify=F),paste,collapse='*')
 
 
     } else{
@@ -906,8 +906,8 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
       # sometimes with correlation it is reported as A:B or B:A, so I take both cases in the list to be sure
       splits <- strsplit(cov_base2_tmp, ":")
-      reversed <- map(splits, rev)
-      cov_base2_tmp2 <- map_chr(reversed , paste, collapse = ":")
+      reversed <- purrr::map(splits, rev)
+      cov_base2_tmp2 <- purrr::map_chr(reversed , paste, collapse = ":")
       cov_base2 <- c(cov_base2_tmp2,cov_base2_tmp,cov_base2)
       cov_base2 <-unique(cov_base2)
 
@@ -927,8 +927,8 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
       # sometimes with correlation it is reported as A:B or B:A, so I take both cases in the list to be sure
       splits <- strsplit(cov_base2_tmp, ":")
-      reversed <- map(splits, rev)
-      cov_base2_tmp2 <- map_chr(reversed , paste, collapse = ":")
+      reversed <- purrr::map(splits, rev)
+      cov_base2_tmp2 <- purrr::map_chr(reversed , paste, collapse = ":")
       cov_base2 <- c(cov_base2_tmp2,cov_base2_tmp,cov_base2)
       cov_base2 <-unique(cov_base2)
 
@@ -949,8 +949,8 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
       # sometimes with correlation it is reported as A:B or B:A, so I take both cases in the list to be sure
       splits <- strsplit(cov_base2_tmp, ":")
-      reversed <- map(splits, rev)
-      cov_base2_tmp2 <- map_chr(reversed , paste, collapse = ":")
+      reversed <- purrr::map(splits, rev)
+      cov_base2_tmp2 <- purrr::map_chr(reversed , paste, collapse = ":")
       cov_base2 <- c(cov_base2_tmp2,cov_base2_tmp,cov_base2)
       cov_base2 <-unique(cov_base2)
 
@@ -976,8 +976,8 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
       # sometimes with correlation it is reported as A:B or B:A, so I take both cases in the list to be sure
       splits <- strsplit(cov_base2_tmp, ":")
-      reversed <- map(splits, rev)
-      cov_base2_tmp2 <- map_chr(reversed , paste, collapse = ":")
+      reversed <- purrr::map(splits, rev)
+      cov_base2_tmp2 <- purrr::map_chr(reversed , paste, collapse = ":")
       cov_base2 <- c(cov_base2_tmp2,cov_base2_tmp,cov_base2)
       cov_base2 <-unique(cov_base2)
 
@@ -1004,8 +1004,8 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
     # sometimes with correlation it is reported as A:B or B:A, so I take both cases in the list to be sure
     splits <- strsplit(coco_select_forw_tot_tmp, ":")
-    reversed <- map(splits, rev)
-    coco_select_forw_tot_tmp2 <- map_chr(reversed , paste, collapse = ":")
+    reversed <- purrr::map(splits, rev)
+    coco_select_forw_tot_tmp2 <- purrr::map_chr(reversed , paste, collapse = ":")
     coco_select_forw_tot <- c(coco_select_forw_tot_tmp2,coco_select_forw_tot_tmp,coco_select_forw_tot)
     coco_select_forw_tot <-unique(coco_select_forw_tot)
     coco_select_forw <- coco_select_forw_tot
@@ -1025,8 +1025,8 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
     # sometimes with correlation it is reported as A:B or B:A, so I take both cases in the list to be sure
     splits <- strsplit(cov_base_tmp, ":")
-    reversed <- map(splits, rev)
-    cov_base_tmp2 <- map_chr(reversed , paste, collapse = ":")
+    reversed <- purrr::map(splits, rev)
+    cov_base_tmp2 <- purrr::map_chr(reversed , paste, collapse = ":")
     cov_base <- c(cov_base_tmp2,cov_base_tmp,cov_base)
     cov_base <-unique(cov_base)
   }
@@ -1102,8 +1102,8 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
         if (!is.null(coco_select_back)) {
 
           splits <- strsplit(coco_select_back, ":")
-          reversed <- map(splits, rev)
-          coco_select_back_fin <- map_chr(reversed , paste, collapse = ":")
+          reversed <- purrr::map(splits, rev)
+          coco_select_back_fin <- purrr::map_chr(reversed , paste, collapse = ":")
 
           coco_select_back_fin <- c(coco_select_back_fin,coco_select_back)
 
