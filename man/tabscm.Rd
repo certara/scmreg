@@ -7,6 +7,8 @@
 tabscm(scmobject, ...)
 }
 \arguments{
+\item{scmobject}{Object returned from \code{scm_reg}}
+
 \item{...}{}
 }
 \value{

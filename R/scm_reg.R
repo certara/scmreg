@@ -49,8 +49,6 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
                     full_relation=NULL,
                     max_steps=Inf,
                     ...){
-  sym <- rlang::sym
-  `%>%` <- magrittr::`%>%`
 
   if (search_direction=='forward'){
     FORW=TRUE
@@ -1244,3 +1242,6 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
   return(scmobject)
 
 }
+
+sym <- rlang::sym
+`%>%` <- magrittr::`%>%`

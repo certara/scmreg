@@ -47,7 +47,7 @@ scm_reg(
 
 \item{base_relation}{base relation included in the base model. Note those relationships cannot be removed in the backward step. Example "age*bwt + crcl"}
 
-\item{full_relation}{Starting model when performing backward step only.}
+\item{full_relation}{starting model when performing backward step only.}
 
 \item{max_steps}{maximal number of covariates included in the forward step}
 
@@ -58,4 +58,21 @@ scm_reg(
 }
 \description{
 Use to perform Stepwise Covariate Modeling (SCM)
+}
+\examples{
+ \dontrun{
+ library(scmreg)
+ library(MASS)
+ haha <- scm_reg(dataset=housing,
+                variable='Sat',
+                covariate.list = c('Infl','Type','Cont'),
+                p_forward=0.01,
+                p_backward=0.001,
+                test_used = 'AIC',
+                regression='ordered-categorical',
+                search_direction='forward-backward',
+                weights_ordered='Freq',
+                max_steps=Inf)
+
+ }
 }

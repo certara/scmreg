@@ -22,6 +22,7 @@ Suggests:
     testthat
 Imports:
     lasso2,
+    magrittr,
     MASS,
     dplyr,
     glue,
