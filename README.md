@@ -28,5 +28,5 @@ model <- scm_reg(dataset=housing,
                 weights_ordered='Freq',
                 max_steps=Inf)
                 
-model <- tabscm(model)
+tabscm(model)
 ```
