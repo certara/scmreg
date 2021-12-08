@@ -13,14 +13,30 @@
 #' @param cov_corr list of correlated covariates you don t want to be included simultaneously like eGFR and CRCL. Can be added as a list of vectors in case of multiple vectors of correlated covariates
 #' @param search_direction step to be performed. Can be 'full', 'forward', 'interaction', 'backward', 'forward-backward', 'forward-interaction' or 'interaction-backward'
 #' @param base_relation base relation included in the base model. Note those relationships cannot be removed in the backward step. Example "age*bwt + crcl"
-#' @param full_relation Starting model when performing backward step only.
+#' @param full_relation starting model when performing backward step only.
 #' @param max_steps maximal number of covariates included in the forward step
 #' @param ... Additional arguments
 #'
 #' @return
-#' @export
 #'
 #' @examples
+#'  \dontrun{
+#'  library(scmreg)
+#'  library(MASS)
+#'  haha <- scm_reg(dataset=housing,
+#'                 variable='Sat',
+#'                 covariate.list = c('Infl','Type','Cont'),
+#'                 p_forward=0.01,
+#'                 p_backward=0.001,
+#'                 test_used = 'AIC',
+#'                 regression='ordered-categorical',
+#'                 search_direction='forward-backward',
+#'                 weights_ordered='Freq',
+#'                 max_steps=Inf)
+#'
+#'  }
+#' @export
+
 scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,covariate.list=NULL,
                     test_used='Chisq',
                     p_forward=0.01,
@@ -1220,7 +1236,11 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
   }
 
-  #return(tabtot)
-  list(scmlog=tabtot,test=test_used, final_mod=final_mod, forward_mod=reg.full.forw,forward_inter_mod=reg.full.int,
-       forward_cov=forward_cov,forward_int_cov=forward_int_cov,final_cov=final_cov, rem_cov=coco_select_back, p_forw=p.forw, p_back=p.back )
+  scmobject <- list(scmlog=tabtot,test=test_used, final_mod=final_mod, forward_mod=reg.full.forw,forward_inter_mod=reg.full.int,
+  forward_cov=forward_cov,forward_int_cov=forward_int_cov,final_cov=final_cov, rem_cov=coco_select_back, p_forw=p.forw, p_back=p.back)
+
+  attr(scmobject, "class") <- "scmobject"
+
+  return(scmobject)
+
 }

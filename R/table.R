@@ -40,13 +40,15 @@ theme_pps_table <- function(x, font_name = "Times New Roman", font_size = 10){
 
 #' Table function for scm
 #'
-#' @param scmobject
+#' @param scmobject Object returned from \code{scm_reg}
 #' @param ...
 #'
 #' @return
 #' @export
 #'
 tabscm <- function(scmobject,...){
+
+  stopifnot(class(scmobject) == "scmobject")
 
   scmobject$scmlog %>%
     #mutate(LRT=ifelse(is.na(LRT),"-",table1::round_pad(LRT,3))) %>%

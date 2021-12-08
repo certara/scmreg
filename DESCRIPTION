@@ -1,5 +1,5 @@
 Package: scmreg
-Title: Perform Stepwise Covariate Modeling (SCM) in R
+Title: Perform Stepwise Covariate Modeling (SCM)
 Version: 0.0.0.9000
 Authors@R: 
     c(person(given = "Philippe",
@@ -10,8 +10,8 @@ Authors@R:
            family = "Craig",
            role = c("ctb"),
            email = "James.Craig@certara.com"))
-Description: What the package does (one paragraph).
-Depends: R (>= 4.0)
+Description: Perform Stepwise Covariate Modeling (SCM) and create table output.
+Depends: R (>= 3.5)
 License: LGPL-3
 Encoding: UTF-8
 LazyData: true
@@ -25,7 +25,7 @@ Imports:
     MASS,
     dplyr,
     glue,
-    tidyverse,
+    purrr,
     crayon,
     flextable,
     officer,
