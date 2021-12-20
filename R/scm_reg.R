@@ -44,7 +44,6 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
                     regression='lm',
                     cov_corr=NULL,
                     search_direction='full',
-                    #FORW=TRUE,INTER=TRUE,BACK=TRUE,
                     base_relation=NULL,
                     full_relation=NULL,
                     max_steps=Inf,
@@ -151,7 +150,7 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
       cov_base_tmp <- broom::tidy(mod0)%>%
         dplyr::filter(term!='(Intercept)')%>%
-        dplyr::filter(str_detect(term,':')) %>%
+        dplyr::filter(stringr::str_detect(term,':')) %>%
         dplyr::pull(term) %>% unique()
 
       # sometimes with correlation it is reported as A:B or B:A, so I take both cases in the list to be sure
@@ -175,7 +174,7 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
       cov_base_tmp <- broom::tidy(mod0)%>%
         dplyr::filter(term!='(Intercept)')%>%
-        dplyr::filter(str_detect(term,':')) %>%
+        dplyr::filter(stringr::str_detect(term,':')) %>%
         dplyr::pull(term) %>% unique()
 
 
@@ -201,7 +200,7 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
       cov_base_tmp <- broom::tidy(mod0)%>%
         dplyr::filter(term!='(Intercept)')%>%
-        dplyr::filter(str_detect(term,':')) %>%
+        dplyr::filter(stringr::str_detect(term,':')) %>%
         dplyr::pull(term) %>% unique()
 
       # sometimes with correlation it is reported as A:B or B:A, so I take both cases in the list to be sure
@@ -236,7 +235,7 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
       cov_base_tmp <- broom::tidy(mod0)%>%
         dplyr::filter(coef.type!='scale')%>%
-        dplyr::filter(str_detect(term,':')) %>%
+        dplyr::filter(stringr::str_detect(term,':')) %>%
         dplyr::pull(term) %>% unique()
 
       # sometimes with correlation it is reported as A:B or B:A, so I take both cases in the list to be sure
@@ -520,7 +519,7 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
       #cov_base_int <- gsub('\\*', "\\+",base_relation)
       cov_base_int <- stringr::str_trim(unlist(unique(stringr::str_split(base_relation ,"\\+"))))
-      cov_base_int <- cov_base_int[str_detect(cov_base_int,'\\*')]
+      cov_base_int <- cov_base_int[stringr::str_detect(cov_base_int,'\\*')]
       # sometimes with correlation it is reported as A:B or B:A, so I take both cases in the list to be sure
       if (!rlang::is_empty(cov_base_int)){
         splits <- strsplit(cov_base_int, "\\*")
@@ -530,7 +529,7 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
         cov_base_int <-unique(cov_base_int)
       }
 
-      coco_select_forw_tot_tmp <- coco_select_forw_tot[!str_detect(coco_select_forw_tot,':')]
+      coco_select_forw_tot_tmp <- coco_select_forw_tot[!stringr::str_detect(coco_select_forw_tot,':')]
 
       if (length(coco_select_forw_tot_tmp)>2) {  ## does not work when only 2 variables
 
@@ -713,7 +712,7 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
     cov_base_int <- stringr::str_trim(unlist(unique(stringr::str_split(base_relation ,"\\+"))))
 
-    if(any(str_detect(cov_base_int,'\\*'))) stop('Interaction term already included, please remove it from the base relation')
+    if(any(stringr::str_detect(cov_base_int,'\\*'))) stop('Interaction term already included, please remove it from the base relation')
 
     if(length(cov_base_int)<2) stop('Not enough covariate in the base relation')
 
@@ -868,10 +867,13 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
     }
 
-    if (!is.null(base_relation) & !grepl(str_replace_all(str_squish(base_relation)," ",""), str_replace_all(str_squish(full_relation)," ",""), fixed = TRUE)){
-      stop("base_relation not included in full_relation argument (or change the order)")
+    if (!is.null(base_relation)) { 
+		if (!grepl(stringr::str_replace_all(stringr::str_squish(base_relation)," ",""), stringr::str_replace_all(stringr::str_squish(full_relation)," ",""), fixed = TRUE)){
+      
+	  stop("base_relation not included in full_relation argument (or change the order)")
 
-    }
+     }
+	}
 
     cocoback <- full_relation
 
@@ -909,13 +911,13 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
       mod0bis=lm(as.formula(glue::glue('{variable} ~ {base_relation}')),data=dataset)
 
-      # in order to get all parameters that are ot allowed to be removed
+      # in order to get all parameters that are not allowed to be removed
       cov_base2 <- gsub('\\*', "\\+",base_relation)
       cov_base2 <- stringr::str_trim(unlist(unique(stringr::str_split(cov_base2, "\\+"))))
 
       cov_base2_tmp <- broom::tidy(mod0bis)%>%
         dplyr::filter(term!='(Intercept)')%>%
-        dplyr::filter(str_detect(term,':')) %>%
+        dplyr::filter(stringr::str_detect(term,':')) %>%
         dplyr::pull(term) %>% unique()
 
       # sometimes with correlation it is reported as A:B or B:A, so I take both cases in the list to be sure
@@ -936,7 +938,7 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
       cov_base2_tmp <- broom::tidy(mod0bis)%>%
         dplyr::filter(term!='(Intercept)')%>%
-        dplyr::filter(str_detect(term,':')) %>%
+        dplyr::filter(stringr::str_detect(term,':')) %>%
         dplyr::pull(term) %>% unique()
 
       # sometimes with correlation it is reported as A:B or B:A, so I take both cases in the list to be sure
@@ -958,7 +960,7 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
       cov_base2_tmp <- broom::tidy(mod0bis)%>%
         dplyr::filter(term!='(Intercept)')%>%
-        dplyr::filter(str_detect(term,':')) %>%
+        dplyr::filter(stringr::str_detect(term,':')) %>%
         dplyr::pull(term) %>% unique()
 
       # sometimes with correlation it is reported as A:B or B:A, so I take both cases in the list to be sure
@@ -985,7 +987,7 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
       cov_base2_tmp <- broom::tidy(mod0bis)%>%
         dplyr::filter(coef.type!='scale')%>%
-        dplyr::filter(str_detect(term,':')) %>%
+        dplyr::filter(stringr::str_detect(term,':')) %>%
         dplyr::pull(term) %>% unique()
 
       # sometimes with correlation it is reported as A:B or B:A, so I take both cases in the list to be sure
@@ -1004,14 +1006,14 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
     if (regression != 'ordered-categorical') {
       coco_select_forw_tot_tmp <- broom::tidy(reg.full)%>%
         dplyr::filter(term!='(Intercept)')%>%
-        dplyr::filter(str_detect(term,':')) %>%
+        dplyr::filter(stringr::str_detect(term,':')) %>%
         dplyr::pull(term) %>% unique()
 
     } else if (regression == 'ordered-categorical') {
 
       coco_select_forw_tot_tmp <- broom::tidy(reg.full)%>%
         dplyr::filter(coef.type!='scale')%>%
-        dplyr::filter(str_detect(term,':')) %>%
+        dplyr::filter(stringr::str_detect(term,':')) %>%
         dplyr::pull(term) %>% unique()
     }
 
@@ -1034,7 +1036,7 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
     cov_base_tmp <- broom::tidy(mod0)%>%
       dplyr::filter(term!='(Intercept)')%>%
-      dplyr::filter(str_detect(term,':')) %>%
+      dplyr::filter(stringr::str_detect(term,':')) %>%
       dplyr::pull(term) %>% unique()
 
     # sometimes with correlation it is reported as A:B or B:A, so I take both cases in the list to be sure
@@ -1234,7 +1236,7 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
   }
 
-  scmobject <- list(scmlog=tabtot,test=test_used, final_mod=final_mod, forward_mod=reg.full.forw,forward_inter_mod=reg.full.int,
+  scmobject <- list(scmlog=tabtot,test=test_used, regression=regression, final_mod=final_mod, forward_mod=reg.full.forw,forward_inter_mod=reg.full.int,
   forward_cov=forward_cov,forward_int_cov=forward_int_cov,final_cov=final_cov, rem_cov=coco_select_back, p_forw=p.forw, p_back=p.back)
 
   attr(scmobject, "class") <- "scmobject"
