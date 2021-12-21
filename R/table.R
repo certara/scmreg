@@ -64,8 +64,8 @@ tabscm <- function(scmobject,...){
     {if ("LRT" %in% names(scmobject$scmlog)) dplyr::rename(., `Delta -2LL`=LRT) else . } %>%
     {if ("LRT" %in% names(scmobject$scmlog) & "Deviance" %in% names(scmobject$scmlog)) dplyr::rename(., `-2LL`=Deviance) else . } %>%
     {if ("Deviance" %in% names(scmobject$scmlog) & !("LRT" %in% names(scmobject$scmlog))) dplyr::rename(., `Delta -2LL`=Deviance) else . } %>%
-    {if ("rss" %in% names(scmobject$scmlog)) dplyr::rename(.,SS=rss) else .} %>%
-    {if ("sumsq" %in% names(scmobject$scmlog)) dplyr::rename(., SUMsq=sumsq) else . } %>%
+    {if ("rss" %in% names(scmobject$scmlog)) dplyr::rename(.,`-2LL`=rss) else .} %>%
+    {if ("sumsq" %in% names(scmobject$scmlog)) dplyr::rename(., `Delta -2LL`=sumsq) else . } %>%
 
     {if ("AIC" %in% scmobject$test) dplyr::select(.,-c('p.value')) else . } %>%
     {if ("Chisq" %in% scmobject$test)  dplyr::mutate(.,p.value=dplyr::case_when(is.na(p.value)~"-",

@@ -1,6 +1,6 @@
 Package: scmreg
 Title: Perform Stepwise Covariate Modeling (SCM)
-Version: 0.0.0.9000
+Version: 0.0.0.9001
 Authors@R: 
     c(person(given = "Philippe",
            family = "Pierrillas",
@@ -9,7 +9,35 @@ Authors@R:
       person(given = "James",
            family = "Craig",
            role = c("ctb"),
-           email = "James.Craig@certara.com"))
+           email = "James.Craig@certara.com"),
+	  person(given = "Paul Matthias",
+           family = "Diderischsen",
+           role = c("aut", "cre"),
+           email = "Paul.Diderichsen@certara.com"),
+      person(given = "Sinziana",
+           family = "Cristea",
+           role = c("ctb"),
+           email = "Sinziana.Cristea@certara.com"),
+	  person(given = "Anna",
+           family = "Largajolli",
+           role = c("ctb"),
+           email = "Anna.Largajolli@certara.com"),
+      person(given = "Antonio",
+           family = "Goncalves",
+           role = c("ctb"),
+           email = "Antonio.Goncalves@certara.com"),
+	  person(given = "Floris",
+           family = "Fauchet",
+           role = c("ctb"),
+           email = "Floris.Fauchet@certara.com"),
+	  person(given = "Vincent",
+           family = "Duval",
+           role = c("ctb"),
+           email = "Vincent.Duval@certara.com"),
+	  person(given = "John",
+           family = "Maringwa",
+           role = c("ctb"),
+           email = "John.Maringwa@certara.com"))
 Description: Perform Stepwise Covariate Modeling (SCM) and create table output.
 Depends: R (>= 3.5)
 License: LGPL-3
