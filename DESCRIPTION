@@ -1,6 +1,6 @@
 Package: scmreg
 Title: Perform Stepwise Covariate Modeling (SCM)
-Version: 0.0.0.9001
+Version: 0.0.0.9002
 Authors@R: 
     c(person(given = "Philippe",
            family = "Pierrillas",
@@ -12,7 +12,7 @@ Authors@R:
            email = "James.Craig@certara.com"),
 	  person(given = "Paul Matthias",
            family = "Diderischsen",
-           role = c("aut", "cre"),
+           role = c("aut", "ctb"),
            email = "Paul.Diderichsen@certara.com"),
       person(given = "Sinziana",
            family = "Cristea",
