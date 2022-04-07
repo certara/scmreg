@@ -137,12 +137,12 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
     if (is.null(base_relation) & regression=='lm') {
 
-      mod0=lm(as.formula(glue::glue('{variable} ~ 1')),data=dataset)
+      mod0=glm(as.formula(glue::glue('{variable} ~ 1')),data=dataset)
 
     }else if (!is.null(base_relation) & regression=='lm') {
       #base_relation <- 'lsoda*coca +orangina'
 
-      mod0=lm(as.formula(glue::glue('{variable} ~ {base_relation}')),data=dataset)
+      mod0=glm(as.formula(glue::glue('{variable} ~ {base_relation}')),data=dataset)
 
       # in order to get all parameters that are ot allowed to be removed
       cov_base <- gsub('\\*', "\\+",base_relation)
@@ -684,7 +684,7 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
 
 
-    if (regression=='lm') { reg.full <- lm(as.formula(glue::glue('{variable} ~{base_relation}')),data=dataset)
+    if (regression=='lm') { reg.full <- glm(as.formula(glue::glue('{variable} ~{base_relation}')),data=dataset)
 
     }
 
@@ -877,7 +877,7 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
     cocoback <- full_relation
 
-    if (regression=='lm') { reg.full <- lm(as.formula(glue::glue('{variable} ~ {cocoback}')),data=dataset)
+    if (regression=='lm') { reg.full <- glm(as.formula(glue::glue('{variable} ~ {cocoback}')),data=dataset)
 
     }
 
@@ -909,7 +909,7 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
     }else if (!is.null(base_relation) & regression=='lm') {
       #base_relation <- 'lsoda*coca +orangina'
 
-      mod0bis=lm(as.formula(glue::glue('{variable} ~ {base_relation}')),data=dataset)
+      mod0bis=glm(as.formula(glue::glue('{variable} ~ {base_relation}')),data=dataset)
 
       # in order to get all parameters that are not allowed to be removed
       cov_base2 <- gsub('\\*', "\\+",base_relation)
@@ -1171,7 +1171,7 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
         }
 
 
-        if (regression=='lm') final_mod <- lm(as.formula(glue::glue('{variable} ~ {final_cov_reg}')),data=dataset)
+        if (regression=='lm') final_mod <- glm(as.formula(glue::glue('{variable} ~ {final_cov_reg}')),data=dataset)
         if (regression=='logistic') final_mod <- glm(as.formula(glue::glue('{variable} ~ {final_cov_reg}')),data=dataset,family='binomial')
         if (regression=='coxph') final_mod <- survival::coxph(as.formula(glue::glue(' survival::Surv({variable}, {variable_event})~{final_cov_reg}')),data=dataset)
         if (regression=='ordered-categorical') {
@@ -1199,7 +1199,7 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
       #
       #    final_cov_reg <- glue::glue_collapse(final_cov, sep = "+")
 
-      #    if (regression=='lm') final_mod <- lm(as.formula(glue::glue('{variable} ~ {final_cov_reg}')),data=dataset)
+      #    if (regression=='lm') final_mod <- glm(as.formula(glue::glue('{variable} ~ {final_cov_reg}')),data=dataset)
       #    if (regression=='logistic') final_mod <- glm(as.formula(glue::glue('{variable} ~ {final_cov_reg}')),data=dataset,family='binomial')
       #    if (regression=='coxph') final_mod <- survival::coxph(as.formula(glue::glue(' survival::Surv({variable}, {variable_event})~{final_cov_reg}')),data=dataset)
       #    if (regression=='ordered-categorical') {

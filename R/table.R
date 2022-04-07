@@ -53,7 +53,7 @@ tabscm <- function(scmobject,...){
   scmobject$scmlog %>%
     #mutate(LRT=ifelse(is.na(LRT),"-",table1::round_pad(LRT,3))) %>%
     #mutate(Deviance=ifelse(is.na(Deviance),"-",table1::round_pad(Deviance,3))) %>%
-
+    {if ('scaled.dev.' %in% names(scmobject$scmlog)) dplyr::select(.,-c('scaled.dev.')) else . } %>%
     {if ("LRT" %in% names(scmobject$scmlog)) dplyr::mutate(., LRT=ifelse(is.na(LRT),"-",table1::round_pad(LRT,3))) else . } %>%
     {if ("Deviance" %in% names(scmobject$scmlog)) dplyr::mutate(., Deviance=ifelse(is.na(Deviance),"-",table1::round_pad(Deviance,3))) else . } %>%
     {if ("rss" %in% names(scmobject$scmlog)) dplyr::mutate(.,rss=ifelse(is.na(rss),"-",table1::round_pad(rss,3))) else .} %>%
