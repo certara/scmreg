@@ -472,7 +472,12 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
     if (INTER==FALSE & BACK==FALSE) {
       final_mod <- reg.full
-      print(broom::tidy(final_mod))
+      tryCatch({
+        print(broom::tidy(final_mod))
+      },
+      error = function(e){
+        return()
+      })
       final_cov <- coco_select_forw
     }
 
@@ -661,7 +666,12 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
     if (BACK==FALSE) {
       final_mod <- reg.full
-      print(broom::tidy(final_mod))
+      tryCatch({
+        print(broom::tidy(final_mod))
+      },
+      error = function(e){
+        return()
+      })
       final_cov <- coco_select_forw
     }
 
@@ -845,7 +855,12 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
     if (BACK==FALSE) {
       final_mod <- reg.full
-      print(broom::tidy(final_mod))
+      tryCatch({
+        print(broom::tidy(final_mod))
+        },
+        error = function(e){
+          return()
+        })
       final_cov <- coco_select_forw
     }
 
@@ -867,9 +882,9 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
     }
 
-    if (!is.null(base_relation)) { 
+    if (!is.null(base_relation)) {
 		if (!grepl(stringr::str_replace_all(stringr::str_squish(base_relation)," ",""), stringr::str_replace_all(stringr::str_squish(full_relation)," ",""), fixed = TRUE)){
-      
+
 	  stop("base_relation not included in full_relation argument (or change the order)")
 
      }
@@ -1184,8 +1199,12 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
           }
         }
-        print(broom::tidy(final_mod))
-
+        tryCatch({
+          print(broom::tidy(final_mod))
+        },
+        error = function(e){
+          return()
+        })
         break
       }
 
@@ -1220,7 +1239,12 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
     print('No covariate included in the forward step, no backward step performed')
     final_mod <- reg.full
-    print(broom::tidy(final_mod))
+    tryCatch({
+      print(broom::tidy(final_mod))
+    },
+    error = function(e){
+      return()
+    })
     final_cov <- coco_select_forw
   }
 
