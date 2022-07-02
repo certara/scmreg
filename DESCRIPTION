@@ -1,6 +1,6 @@
 Package: scmreg
 Title: Perform Stepwise Covariate Modeling (SCM)
-Version: 0.0.0.9004
+Version: 0.0.0.9005
 Authors@R: 
     c(person(given = "Philippe",
            family = "Pierrillas",

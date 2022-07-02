@@ -155,8 +155,8 @@ scm_reg <- function(dataset,variable,variable_event=NULL,weights_ordered=NULL,co
 
       # sometimes with correlation it is reported as A:B or B:A, so I take both cases in the list to be sure
       splits <- strsplit(cov_base_tmp, ":")
-      reversed <- purr::map(splits, rev)
-      cov_base_tmp2 <- purr::map_chr(reversed , paste, collapse = ":")
+      reversed <- purrr::map(splits, rev)
+      cov_base_tmp2 <- purrr::map_chr(reversed , paste, collapse = ":")
       cov_base <- c(cov_base_tmp2,cov_base_tmp,cov_base)
       cov_base <-unique(cov_base)
 
