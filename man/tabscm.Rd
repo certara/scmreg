@@ -9,10 +9,10 @@ tabscm(scmobject, ...)
 \arguments{
 \item{scmobject}{Object returned from \code{scm_reg}}
 
-\item{...}{}
+\item{...}{Additional args}
 }
 \value{
-
+Object of class \code{flextable}
 }
 \description{
 Table function for scm

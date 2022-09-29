@@ -1,3 +1,7 @@
+#' @importFrom stats AIC add1 as.formula df drop1 glm update
+#' @importFrom utils combn
+#' @importFrom magrittr %>%
+NULL
 
 #' Use to perform Stepwise Covariate Modeling (SCM)
 #'
@@ -17,7 +21,7 @@
 #' @param max_steps maximal number of covariates included in the forward step
 #' @param ... Additional arguments
 #'
-#' @return
+#' @return Object of class \code{scmobject}
 #'
 #' @examples
 #'  \dontrun{

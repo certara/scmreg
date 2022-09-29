@@ -54,7 +54,7 @@ scm_reg(
 \item{...}{Additional arguments}
 }
 \value{
-
+Object of class \code{scmobject}
 }
 \description{
 Use to perform Stepwise Covariate Modeling (SCM)
