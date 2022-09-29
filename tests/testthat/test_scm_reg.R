@@ -1,4 +1,4 @@
-test_that("scm_reg returns object of class scmobject", {
+test_that("class inheritance works", {
 
   model <- suppressWarnings(
     scm_reg(
@@ -15,6 +15,10 @@ test_that("scm_reg returns object of class scmobject", {
     )
   )
 
+  table <- tabscm(model)
+
   expect_true(inherits(model, "scmobject"))
+
+  expect_true(inherits(table, "flextable"))
 
 })
