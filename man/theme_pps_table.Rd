@@ -13,9 +13,6 @@ theme_pps_table(x, font_name = "Times New Roman", font_size = 10)
 
 \item{font_size}{Numeric}
 }
-\value{
-
-}
 \description{
 SCM Table Theme
 }
