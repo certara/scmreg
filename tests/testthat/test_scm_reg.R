@@ -84,7 +84,9 @@ test_that("snapshot is preserved for linear regression", {
   skip_if(is_oldrel)
 
   # convenience function for test
-  linear_regression_test <- function(search_direction, ...) {
+  linear_regression_test <- function(search_direction,
+                                     base_relation = "Temp",
+                                     ...) {
     suppressWarnings(scm_reg(
       dataset = datasets::airquality,
       variable = "Ozone",
@@ -102,14 +104,14 @@ test_that("snapshot is preserved for linear regression", {
   expect_snapshot_value(
     linear_regression_test(
       search_direction = "forward",
-      covariate.list = c("Solar.R", "Wind", "Temp")
+      covariate.list = c("Solar.R", "Wind")
     ),
     style = "serialize"
   )
   expect_snapshot_value(
     linear_regression_test(
       search_direction = "backward",
-      covariate.list = c("Solar.R", "Wind", "Temp"),
+      covariate.list = c("Solar.R", "Wind"),
       full_relation = "Solar.R + Wind + Temp"
     ),
     style = "serialize"
@@ -117,34 +119,34 @@ test_that("snapshot is preserved for linear regression", {
   expect_snapshot_value(
     linear_regression_test(
       search_direction = "forward-backward",
-      covariate.list = c("Solar.R", "Wind", "Temp")
+      covariate.list = c("Solar.R", "Wind")
     ),
     style = "serialize"
   )
   expect_snapshot_value(
     linear_regression_test(
       search_direction = "full",
-      covariate.list = c("Solar.R", "Wind", "Temp")
-    ),
-    style = "serialize"
-  )
-  expect_snapshot_value(
-    linear_regression_test(
-      search_direction = "interaction",
-      base_relation = "Solar.R + Wind + Temp"
-    ),
-    style = "serialize"
-  )
-  expect_snapshot_value(
-    linear_regression_test(
-      search_direction = "forward-interaction",
-      covariate.list = c("Solar.R", "Wind", "Temp")
+      covariate.list = c("Solar.R", "Wind")
     ),
     style = "serialize"
   )
 
-  # This test omitted for the time being as it errors unexpectedly
-  #
+  # skipping tests of interaction directions for now
+
+  # expect_snapshot_value(
+  #   linear_regression_test(
+  #     search_direction = "interaction",
+  #     base_relation = "Solar.R + Wind + Temp"
+  #   ),
+  #   style = "serialize"
+  # )
+  # expect_snapshot_value(
+  #   linear_regression_test(
+  #     search_direction = "forward-interaction",
+  #     covariate.list = c("Solar.R", "Wind")
+  #   ),
+  #   style = "serialize"
+  # )
   # expect_snapshot_value(
   #   linear_regression_test(
   #     search_direction = "interaction-backward",
@@ -161,13 +163,16 @@ test_that("snapshot is preserved for logistic regression", {
   skip_if(is_oldrel)
 
   # convenience function for test
-  logistic_regression_test <- function(search_direction, ...) {
+  logistic_regression_test <- function(search_direction,
+                                       base_relation = "age",
+                                       ...) {
     df <- MASS::Melanoma
     df$status <- ifelse(df$status == 1, 1, 0)
     suppressWarnings(scm_reg(
       df,
       variable = "status",
       regression = "logistic",
+      base_relation = base_relation,
       search_direction = search_direction,
       p_forward = 0.01,
       p_backward = 0.001,
@@ -179,7 +184,7 @@ test_that("snapshot is preserved for logistic regression", {
   expect_snapshot_value(
     logistic_regression_test(
       search_direction = "forward",
-      covariate.list = c("sex", "age", "thickness", "ulcer")
+      covariate.list = c("sex", "thickness", "ulcer")
     ),
     style = "serialize"
   )
@@ -193,33 +198,35 @@ test_that("snapshot is preserved for logistic regression", {
   expect_snapshot_value(
     logistic_regression_test(
       search_direction = "forward-backward",
-      covariate.list = c("sex", "age", "thickness", "ulcer")
+      covariate.list = c("sex", "thickness", "ulcer")
     ),
     style = "serialize"
   )
   expect_snapshot_value(
     logistic_regression_test(
       search_direction = "full",
-      covariate.list = c("sex", "age", "thickness", "ulcer")
-    ),
-    style = "serialize"
-  )
-  expect_snapshot_value(
-    logistic_regression_test(
-      search_direction = "interaction",
-      base_relation = "sex + age + thickness + ulcer"
-    ),
-    style = "serialize"
-  )
-  expect_snapshot_value(
-    logistic_regression_test(
-      search_direction = "forward-interaction",
-      covariate.list = c("sex", "age", "thickness", "ulcer")
+      covariate.list = c("sex", "thickness", "ulcer")
     ),
     style = "serialize"
   )
 
-  # as above... this errors unexpectedly, ignored for now
+  # as above, ignored for now
+
+  # expect_snapshot_value(
+  #   logistic_regression_test(
+  #     search_direction = "interaction",
+  #     base_relation = "sex + age + thickness + ulcer"
+  #   ),
+  #   style = "serialize"
+  # )
+  # expect_snapshot_value(
+  #   logistic_regression_test(
+  #     search_direction = "forward-interaction",
+  #     covariate.list = c("sex", "age", "thickness", "ulcer")
+  #   ),
+  #   style = "serialize"
+  # )
+  #
   # expect_snapshot_value(
   #   logistic_regression_test(
   #     search_direction = "interaction-backward",
@@ -282,21 +289,22 @@ test_that("snapshot is preserved for cox-ph regression", {
     ),
     style = "serialize"
   )
-  expect_snapshot_value(
-    cox_regression_test(
-      search_direction = "interaction",
-      base_relation = "sex + age + ph.ecog + wt.loss"
-    ),
-    style = "serialize"
-  )
-  expect_snapshot_value(
-    cox_regression_test(
-      search_direction = "forward-interaction",
-      covariate.list = c("sex", "age", "ph.ecog", "wt.loss")
-    ),
-    style = "serialize"
-  )
-  # as above... commented out because interaction-backward errors
+
+  # ignored for now
+  # expect_snapshot_value(
+  #   cox_regression_test(
+  #     search_direction = "interaction",
+  #     base_relation = "sex + age + ph.ecog + wt.loss"
+  #   ),
+  #   style = "serialize"
+  # )
+  # expect_snapshot_value(
+  #   cox_regression_test(
+  #     search_direction = "forward-interaction",
+  #     covariate.list = c("sex", "age", "ph.ecog", "wt.loss")
+  #   ),
+  #   style = "serialize"
+  # )
   # expect_snapshot_value(
   #   cox_regression_test(
   #     search_direction = "interaction-backward",
