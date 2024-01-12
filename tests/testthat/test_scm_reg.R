@@ -29,7 +29,9 @@ test_that("class inheritance works", {
 # At present, scmreg bundles everything into a single scm_reg() function,
 # making unit tests difficult. These snapshot tests for the final output
 # objects are added to detect any changes to results (intentional or not)
-# that may be introduced by future refactoring
+# that may be introduced by future refactoring. In the long run I'd like
+# to replace these with more robust tests as the code base improves, but
+# for now this will have to do.
 
 # snapshot tests are fragile, so we don't want to run on old releases
 is_oldrel <- grepl(rversions::r_oldrel()$version, R.version.string)
@@ -153,4 +155,78 @@ test_that("snapshot is preserved for linear regression", {
 
 })
 
+
+test_that("snapshot is preserved for logistic regression", {
+
+  skip_if(is_oldrel)
+
+  # convenience function for test
+  logistic_regression_test <- function(search_direction, ...) {
+    df <- MASS::Melanoma
+    df$status <- ifelse(df$status == 1, 1, 0)
+    suppressWarnings(scm_reg(
+      df,
+      variable = "status",
+      regression = "logistic",
+      search_direction = search_direction,
+      p_forward = 0.01,
+      p_backward = 0.001,
+      test_used = "AIC",
+      ...
+    ))
+  }
+
+  expect_snapshot_value(
+    logistic_regression_test(
+      search_direction = "forward",
+      covariate.list = c("sex", "age", "thickness", "ulcer")
+    ),
+    style = "serialize"
+  )
+  expect_snapshot_value(
+    logistic_regression_test(
+      search_direction = "backward",
+      full_relation = "sex + age + thickness + ulcer"
+    ),
+    style = "serialize"
+  )
+  expect_snapshot_value(
+    logistic_regression_test(
+      search_direction = "forward-backward",
+      covariate.list = c("sex", "age", "thickness", "ulcer")
+    ),
+    style = "serialize"
+  )
+  expect_snapshot_value(
+    logistic_regression_test(
+      search_direction = "full",
+      covariate.list = c("sex", "age", "thickness", "ulcer")
+    ),
+    style = "serialize"
+  )
+  expect_snapshot_value(
+    logistic_regression_test(
+      search_direction = "interaction",
+      base_relation = "sex + age + thickness + ulcer"
+    ),
+    style = "serialize"
+  )
+  expect_snapshot_value(
+    logistic_regression_test(
+      search_direction = "forward-interaction",
+      covariate.list = c("sex", "age", "thickness", "ulcer")
+    ),
+    style = "serialize"
+  )
+
+  # as above... this errors unexpectedly, ignored for now
+  # expect_snapshot_value(
+  #   logistic_regression_test(
+  #     search_direction = "interaction-backward",
+  #     base_relation = "sex + age + thickness + ulcer"
+  #   ),
+  #   style = "serialize"
+  # )
+
+})
 
