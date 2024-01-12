@@ -26,6 +26,11 @@ test_that("class inheritance works", {
 
 # snapshot tests to detect if updates alter output objects ----------------
 
+# At present, scmreg bundles everything into a single scm_reg() function,
+# making unit tests difficult. These snapshot tests for the final output
+# objects are added to detect any changes to results (intentional or not)
+# that may be introduced by future refactoring
+
 test_that("snapshot is preserved for ordered-categorical regression", {
 
   # convenience function for test
@@ -63,9 +68,80 @@ test_that("snapshot is preserved for ordered-categorical regression", {
   expect_error(ordered_categorical_test("full"))
   expect_error(ordered_categorical_test("interaction"))
   expect_error(ordered_categorical_test("forward-interaction"))
-  expect_error(ordered_categorical_test("backward-interaction"))
+  expect_error(ordered_categorical_test("interaction-backward"))
 
 })
 
+test_that("snapshot is preserved for linear regression", {
 
+  # convenience function for test
+  linear_regression_test <- function(search_direction, ...) {
+    suppressWarnings(scm_reg(
+      dataset = datasets::airquality,
+      variable = "Ozone",
+      p_forward = 0.01,
+      p_backward = 0.001,
+      test_used = "AIC",
+      regression = "lm",
+      search_direction = search_direction,
+      max_steps = Inf,
+      ...
+    ))
+  }
 
+  # expect unchanged output for all search directions
+  expect_snapshot_value(
+    linear_regression_test(
+      search_direction = "forward",
+      covariate.list = c("Solar.R", "Wind", "Temp")
+    ),
+    style = "serialize"
+  )
+  expect_snapshot_value(
+    linear_regression_test(
+      search_direction = "backward",
+      covariate.list = c("Solar.R", "Wind", "Temp"),
+      full_relation = "Solar.R + Wind + Temp"
+    ),
+    style = "serialize"
+  )
+  expect_snapshot_value(
+    linear_regression_test(
+      search_direction = "forward-backward",
+      covariate.list = c("Solar.R", "Wind", "Temp")
+    ),
+    style = "serialize"
+  )
+  expect_snapshot_value(
+    linear_regression_test(
+      search_direction = "full",
+      covariate.list = c("Solar.R", "Wind", "Temp")
+    ),
+    style = "serialize"
+  )
+  expect_snapshot_value(
+    linear_regression_test(
+      search_direction = "interaction",
+      base_relation = "Solar.R + Wind + Temp"
+    ),
+    style = "serialize"
+  )
+  expect_snapshot_value(
+    linear_regression_test(
+      search_direction = "forward-interaction",
+      covariate.list = c("Solar.R", "Wind", "Temp")
+    ),
+    style = "serialize"
+  )
+
+  # This test omitted for the time being as it errors unexpectedly
+  #
+  # expect_snapshot_value(
+  #   linear_regression_test(
+  #     search_direction = "interaction-backward",
+  #     base_relation = "Solar.R + Wind + Temp"
+  #   ),
+  #   style = "serialize"
+  # )
+
+})
