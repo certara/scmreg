@@ -47,6 +47,7 @@ RoxygenNote: 7.1.2
 Suggests:
     knitr,
     rmarkdown,
+    rversions,
     testthat (>= 3.0.0)
 Imports:
     broom,
