@@ -31,7 +31,12 @@ test_that("class inheritance works", {
 # objects are added to detect any changes to results (intentional or not)
 # that may be introduced by future refactoring
 
+# snapshot tests are fragile, so we don't want to run on old releases
+is_oldrel <- grepl(rversions::r_oldrel()$version, R.version.string)
+
 test_that("snapshot is preserved for ordered-categorical regression", {
+
+  skip_if(is_oldrel)
 
   # convenience function for test
   ordered_categorical_test <- function(search_direction, ...) {
@@ -73,6 +78,8 @@ test_that("snapshot is preserved for ordered-categorical regression", {
 })
 
 test_that("snapshot is preserved for linear regression", {
+
+  skip_if(is_oldrel)
 
   # convenience function for test
   linear_regression_test <- function(search_direction, ...) {
@@ -145,3 +152,5 @@ test_that("snapshot is preserved for linear regression", {
   # )
 
 })
+
+
