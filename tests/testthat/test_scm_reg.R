@@ -230,3 +230,79 @@ test_that("snapshot is preserved for logistic regression", {
 
 })
 
+
+test_that("snapshot is preserved for cox-ph regression", {
+
+  skip_if(is_oldrel)
+
+  # convenience function for test
+  cox_regression_test <- function(search_direction, ...) {
+    df <- survival::cancer
+    keep <- !is.na(df$time) & !is.na(df$status) & !is.na(df$sex) &
+      !is.na(df$age) & !is.na(df$ph.ecog) & !is.na(df$wt.loss)
+    df <- df[keep, ]
+    suppressWarnings(scm_reg(
+      df,
+      variable = "time",
+      variable_event = "status",
+      regression = "coxph",
+      search_direction = search_direction,
+      p_forward = 0.01,
+      p_backward = 0.001,
+      test_used = "AIC",
+      ...
+    ))
+  }
+
+  expect_snapshot_value(
+    cox_regression_test(
+      search_direction = "forward",
+      covariate.list = c("sex", "age", "ph.ecog", "wt.loss")
+    ),
+    style = "serialize"
+  )
+  expect_snapshot_value(
+    cox_regression_test(
+      search_direction = "backward",
+      full_relation = "sex + age + ph.ecog + wt.loss"
+    ),
+    style = "serialize"
+  )
+  expect_snapshot_value(
+    cox_regression_test(
+      search_direction = "forward-backward",
+      covariate.list = c("sex", "age", "ph.ecog", "wt.loss")
+    ),
+    style = "serialize"
+  )
+  expect_snapshot_value(
+    cox_regression_test(
+      search_direction = "full",
+      covariate.list = c("sex", "age", "ph.ecog", "wt.loss")
+    ),
+    style = "serialize"
+  )
+  expect_snapshot_value(
+    cox_regression_test(
+      search_direction = "interaction",
+      base_relation = "sex + age + ph.ecog + wt.loss"
+    ),
+    style = "serialize"
+  )
+  expect_snapshot_value(
+    cox_regression_test(
+      search_direction = "forward-interaction",
+      covariate.list = c("sex", "age", "ph.ecog", "wt.loss")
+    ),
+    style = "serialize"
+  )
+  # as above... commented out because interaction-backward errors
+  # expect_snapshot_value(
+  #   cox_regression_test(
+  #     search_direction = "interaction-backward",
+  #     base_relation = "sex + age + ph.ecog + wt.loss"
+  #   ),
+  #   style = "serialize"
+  # )
+
+})
