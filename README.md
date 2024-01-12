@@ -1,6 +1,12 @@
 # scmreg
-Perform Stepwise Covariate Modeling (SCM) in R
 
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/certara/scmreg/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/certara/scmreg/actions/workflows/R-CMD-check.yaml)
+[![Codecov test
+coverage](https://codecov.io/gh/certara/scmreg/branch/master/graph/badge.svg)](https://app.codecov.io/gh/certara/scmreg?branch=master)
+<!-- badges: end -->
+
+Perform Stepwise Covariate Modeling (SCM) in R
 
 ### Installation
 ```
